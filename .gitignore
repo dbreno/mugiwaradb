@@ -1,12 +1,13 @@
 # Ambiente Virtual do Python
-venv/
+mugiwara-store-backend/venv
+
 
 # Dados do Banco de Dados Docker
 postgres-data/
 
 # Cache do Python
-__pycache__/
-*.pyc
+mugiwara-store-backend/__pycache__/
+mugiwara-store-backend/__pycache__/*.pyc
 
 # Arquivos de configuração de IDEs/Editores
 .vscode/
