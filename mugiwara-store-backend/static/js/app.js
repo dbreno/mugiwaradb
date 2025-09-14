@@ -6,22 +6,27 @@ createApp({
             produtos: [],
             loading: true,
             error: null,
-            apiUrl: '/api/produtos',  // Alterado para relativo, já que Flask serve tudo
+            apiUrl: '/api/produtos',
             showModal: false,
             isEditMode: false,
             currentProduct: {
                 id_produto: null,
                 nome: '',
                 descricao: '',
-                preco: 0,
-                quantidade_estoque: 0,
+                preco: 0.01,
+                quantidade_estoque: 1,
                 categoria: '',
-                fabricado_em_mari: false
+                fabricado_em_mari: false,
+                imagem: ''  // Novo campo para URL da imagem
             },
-            // NOVOS: Para busca e relatório
             searchTerm: '',
             report: null,
-            showReport: false
+            showReport: false,
+            // NOVOS para filtros
+            categoryFilter: '',
+            sortOption: 'nome_asc',
+            priceMin: null,
+            priceMax: null
         }
     },
     mounted() {
@@ -31,6 +36,44 @@ createApp({
                 card.classList.add('animate-fadeIn');
             });
         }, 100);
+    },
+    computed: {
+        // NOVO: Categorias únicas para o select
+        uniqueCategories() {
+            const categories = this.produtos.map(p => p.categoria);
+            return [...new Set(categories)].sort();
+        },
+        // NOVO: Produtos filtrados e ordenados
+        filteredProdutos() {
+            let filtered = this.produtos;
+
+            // Filtro por categoria
+            if (this.categoryFilter) {
+                filtered = filtered.filter(p => p.categoria === this.categoryFilter);
+            }
+
+            // Filtro por faixa de preço
+            if (this.priceMin !== null) {
+                filtered = filtered.filter(p => p.preco >= this.priceMin);
+            }
+            if (this.priceMax !== null) {
+                filtered = filtered.filter(p => p.preco <= this.priceMax);
+            }
+
+            // Ordenação
+            switch (this.sortOption) {
+                case 'nome_asc':
+                    return filtered.sort((a, b) => a.nome.localeCompare(b.nome));
+                case 'nome_desc':
+                    return filtered.sort((a, b) => b.nome.localeCompare(a.nome));
+                case 'preco_asc':
+                    return filtered.sort((a, b) => a.preco - b.preco);
+                case 'preco_desc':
+                    return filtered.sort((a, b) => b.preco - a.preco);
+                default:
+                    return filtered;
+            }
+        }
     },
     methods: {
         fetchProdutos() {
@@ -63,7 +106,8 @@ createApp({
                 preco: 0.01,
                 quantidade_estoque: 1,
                 categoria: '',
-                fabricado_em_mari: false
+                fabricado_em_mari: false,
+                imagem: ''  // Novo
             };
             this.showModal = true;
         },
@@ -76,7 +120,6 @@ createApp({
             this.showModal = false;
         },
         saveProduct() {
-            // NOVO: Validações no frontend
             if (this.currentProduct.preco <= 0) {
                 alert('O preço deve ser maior que zero!');
                 return;
@@ -124,10 +167,9 @@ createApp({
                 .catch(error => console.error('Erro ao deletar produto:', error));
             }
         },
-        // NOVO: Método para busca
         searchProdutos() {
             if (!this.searchTerm) {
-                this.fetchProdutos();  // Se vazio, volta para todos
+                this.fetchProdutos();
                 return;
             }
             this.loading = true;
@@ -149,7 +191,6 @@ createApp({
                     this.loading = false;
                 });
         },
-        // NOVO: Método para relatório
         fetchReport() {
             fetch('/api/produtos/relatorio')
                 .then(response => response.json())

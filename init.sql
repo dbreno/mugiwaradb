@@ -11,3 +11,8 @@ CREATE TABLE PRODUTO (
     CONSTRAINT ck_produto_preco CHECK (preco > 0),
     CONSTRAINT ck_produto_estoque CHECK (quantidade_estoque >= 0)
 );
+
+INSERT INTO PRODUTO (nome, descricao, preco, quantidade_estoque, categoria, fabricado_em_mari) VALUES
+('Action Figure Luffy Gear 5', 'Estátua do Despertar da Hito Hito no Mi, Modelo: Nika', 199.90, 15, 'Action Figure', false),
+('Pôster de Recompensa - Roronoa Zoro', 'Pôster de procurado de Roronoa Zoro após Wano. Berries: 1,111,000,000', 39.90, 50, 'Pôster de Recompensa', true),
+('Réplica da Gomu Gomu no Mi', 'Réplica em escala 1:1 da fruta do diabo comida por Monkey D. Luffy.', 89.90, 25, 'Akuma no Mi', false);

@@ -41,6 +41,31 @@
                 </button>
             </div>
 
+            <!-- NOVO: Seção de Filtros -->
+            <div class="mb-8 flex flex-col md:flex-row justify-center items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <label for="categoryFilter" class="text-gray-700">Categoria:</label>
+                    <select v-model="categoryFilter" id="categoryFilter" class="form-input">
+                        <option value="">Todas</option>
+                        <option v-for="cat in uniqueCategories" :key="cat" :value="cat">{{ cat }}</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label for="sortOption" class="text-gray-700">Ordenar por:</label>
+                    <select v-model="sortOption" id="sortOption" class="form-input">
+                        <option value="nome_asc">Nome (A-Z)</option>
+                        <option value="nome_desc">Nome (Z-A)</option>
+                        <option value="preco_asc">Preço (mais barato)</option>
+                        <option value="preco_desc">Preço (mais caro)</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-gray-700">Faixa de Preço:</label>
+                    <input v-model.number="priceMin" type="number" placeholder="Mín" class="form-input w-20">
+                    <input v-model.number="priceMax" type="number" placeholder="Máx" class="form-input w-20">
+                </div>
+            </div>
+
             <!-- Barra de busca com ícone de lupa pirata -->
             <div class="mb-8 flex justify-center">
                 <input v-model="searchTerm" type="text" placeholder="Busque por tesouros no mar... Yo ho ho!" class="form-input w-1/2 md:w-1/3 mr-2">
@@ -57,8 +82,8 @@
             <!-- Grid de Produtos (com scroll horizontal em mobile para carrossel) -->
             <div v-if="!loading && !error" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 overflow-x-auto pb-4 snap-x snap-mandatory">
                 <!-- Card de Produto como baú -->
-                <div v-for="produto in produtos" :key="produto.id_produto" class="card-bg rounded-lg shadow-md overflow-hidden flex flex-col snap-center min-w-[250px]">
-                    <img :src="'https://placehold.co/400x300/3d2c22/f0e8d9?text=' + encodeURIComponent(produto.categoria)" :alt="produto.nome" class="w-full h-48 object-cover border-b-4 border-[#ffd700]">
+                <div v-for="produto in filteredProdutos" :key="produto.id_produto" class="card-bg rounded-lg shadow-md overflow-hidden flex flex-col snap-center min-w-[250px]">
+                    <img :src="produto.imagem || 'https://placehold.co/400x300?text=Tesouro'" :alt="produto.nome" class="w-full h-48 object-cover border-b-4 border-[#ffd700]">
                     <div class="p-4 flex flex-col flex-grow">
                         <h2 class="text-lg text-gold-outline font-pirata truncate" :title="produto.nome">{{ produto.nome }}</h2> <!-- Fonte pirata e vermelho -->
                         <p class="text-gray-600 text-sm mt-1 flex-grow">{{ produto.descricao }}</p>

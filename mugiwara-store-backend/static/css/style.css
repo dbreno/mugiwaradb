@@ -39,15 +39,45 @@ body::before {
 }
 
 .card-bg {
-    background-color: rgba(253, 250, 242, 0.9); /* Semi-transparente para ver o fundo */
-    border: 3px solid #c8a064; /* Dourado com borda grossa como baú */
-    border-radius: 15px; /* Arredondado como barril */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2), inset 0 0 10px rgba(200,160,100,0.5); /* Sombra de tesouro */
+    background-color: rgba(253, 250, 242, 0.9);
+    border: 3px solid #c8a064;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2), inset 0 0 10px rgba(200,160,100,0.5);
     transition: transform 0.3s ease-in-out;
+    height: 450px; /* Altura fixa para todos os cards */
+    display: flex;
+    flex-direction: column;
 }
+
 
 .card-bg:hover {
     transform: scale(1.05); /* Efeito de "flutuar" no mar */
+}
+
+
+.card-bg img {
+    width: 100%;
+    height: 200px; /* Altura fixa para imagens */
+    object-fit: cover; /* Ajusta a imagem sem distorcer, cortando se necessário */
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.card-bg .p-4 {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Responsividade para cards */
+@media (max-width: 768px) {
+    .card-bg {
+        height: auto; /* Flexível em mobile */
+    }
+    .card-bg img {
+        height: 150px;
+    }
 }
 
 .header-bg {

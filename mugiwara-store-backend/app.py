@@ -1,5 +1,5 @@
 import psycopg2
-from flask import Flask, jsonify, request, render_template  # Adicione render_template
+from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 
 # --- Configuração do Banco de Dados ---
@@ -23,7 +23,7 @@ class ProdutoDAO:
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
-            sql_query = "SELECT id_produto, nome, descricao, preco, quantidade_estoque, categoria, fabricado_em_mari FROM PRODUTO ORDER BY nome;"
+            sql_query = "SELECT id_produto, nome, descricao, preco, quantidade_estoque, categoria, fabricado_em_mari, imagem FROM PRODUTO ORDER BY nome;"
             cursor.execute(sql_query)
             resultados = cursor.fetchall()
             cursor.close()
@@ -36,7 +36,8 @@ class ProdutoDAO:
                     'preco': float(resultado[3]),
                     'quantidade_estoque': resultado[4],
                     'categoria': resultado[5],
-                    'fabricado_em_mari': resultado[6]
+                    'fabricado_em_mari': resultado[6],
+                    'imagem': resultado[7]  # Novo campo
                 })
         except Exception as e:
             print(f"Erro ao listar produtos: {e}")
@@ -56,7 +57,8 @@ class ProdutoDAO:
                 produtos.append({
                     'id_produto': resultado[0], 'nome': resultado[1], 'descricao': resultado[2],
                     'preco': float(resultado[3]), 'quantidade_estoque': resultado[4],
-                    'categoria': resultado[5], 'fabricado_em_mari': resultado[6]
+                    'categoria': resultado[5], 'fabricado_em_mari': resultado[6],
+                    'imagem': resultado[7]  # Novo campo
                 })
         except Exception as e:
             print(f"Erro ao pesquisar produtos por nome: {e}")
@@ -67,12 +69,13 @@ class ProdutoDAO:
             conn = self._get_connection()
             cursor = conn.cursor()
             sql_query = """
-                INSERT INTO PRODUTO (nome, descricao, preco, quantidade_estoque, categoria, fabricado_em_mari)
-                VALUES (%s, %s, %s, %s, %s, %s) RETURNING id_produto;
+                INSERT INTO PRODUTO (nome, descricao, preco, quantidade_estoque, categoria, fabricado_em_mari, imagem)
+                VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id_produto;
             """
             data = (
                 produto['nome'], produto['descricao'], produto['preco'],
-                produto['quantidade_estoque'], produto['categoria'], produto['fabricado_em_mari']
+                produto['quantidade_estoque'], produto['categoria'], produto['fabricado_em_mari'],
+                produto.get('imagem', '')  # Novo campo, default vazio
             )
             cursor.execute(sql_query, data)
             id_produto_novo = cursor.fetchone()[0]
@@ -103,7 +106,8 @@ class ProdutoDAO:
                 produto = {
                     'id_produto': resultado[0], 'nome': resultado[1], 'descricao': resultado[2],
                     'preco': float(resultado[3]), 'quantidade_estoque': resultado[4],
-                    'categoria': resultado[5], 'fabricado_em_mari': resultado[6]
+                    'categoria': resultado[5], 'fabricado_em_mari': resultado[6],
+                    'imagem': resultado[7]  # Novo campo
                 }
         except Exception as e:
             print(f"Erro ao buscar produto: {e}")
@@ -114,12 +118,13 @@ class ProdutoDAO:
             conn = self._get_connection()
             cursor = conn.cursor()
             sql_query = """
-                UPDATE PRODUTO SET nome=%s, descricao=%s, preco=%s, quantidade_estoque=%s, categoria=%s, fabricado_em_mari=%s
+                UPDATE PRODUTO SET nome=%s, descricao=%s, preco=%s, quantidade_estoque=%s, categoria=%s, fabricado_em_mari=%s, imagem=%s
                 WHERE id_produto = %s;
             """
             data = (
                 produto_data['nome'], produto_data['descricao'], produto_data['preco'],
                 produto_data['quantidade_estoque'], produto_data['categoria'], produto_data['fabricado_em_mari'],
+                produto_data.get('imagem', ''),  # Novo campo
                 id_produto
             )
             cursor.execute(sql_query, data)
