@@ -1,0 +1,4 @@
+# mugiwara-store-backend/requirements.txt
+flask
+flask-cors
+psycopg2-binary

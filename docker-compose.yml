@@ -1,41 +1,30 @@
-# docker-compose.yml
-# Este arquivo define os serviços que compõem nossa aplicação, facilitando
-# a criação e o gerenciamento de ambientes de desenvolvimento com o Docker.
-
-# A seção 'services' é onde declaramos cada container que fará parte da aplicação.
 services:
-  # 'db' é o nome que damos ao nosso serviço de banco de dados.
+  # Serviço do banco de dados
   db:
-    # A imagem Docker que será usada para criar o container.
-    # Aqui, estamos usando a imagem oficial do PostgreSQL, na versão 16.
     image: postgres:16
-    
-    # Política de reinicialização. 'always' significa que o Docker tentará
-    # reiniciar o container sempre que ele parar, garantindo que o banco
-    # esteja sempre disponível.
     restart: always
-    
-    # Variáveis de ambiente usadas para configurar o container do PostgreSQL na sua
-    # primeira inicialização.
     environment:
-      POSTGRES_DB: mugiwara_store  # Define o nome do banco de dados a ser criado.
-      POSTGRES_USER: luffy          # Define o nome do usuário superusuário.
-      POSTGRES_PASSWORD: meusonhoeh # Define a senha para este usuário.
-      
-    # Mapeamento de portas. Conecta a porta 5432 do container (onde o PostgreSQL roda)
-    # à porta 5432 da sua máquina local. Isso permite que nossa aplicação Flask
-    # (rodando localmente) se conecte ao banco de dados dentro do container.
+      POSTGRES_DB: mugiwara_store
+      POSTGRES_USER: luffy
+      POSTGRES_PASSWORD: meusonhoeh
     ports:
       - "5432:5432"
-      
-    # Mapeamento de volumes. Essencial para a persistência dos dados.
     volumes:
-      # Mapeia a pasta 'postgres-data' no seu computador para a pasta onde o PostgreSQL
-      # armazena seus dados dentro do container. Isso garante que, mesmo que o container
-      # seja removido, os dados do banco não sejam perdidos.
       - ./postgres-data:/var/lib/postgresql/data
-      
-      # Mapeia nosso script SQL de inicialização para uma pasta especial dentro do container.
-      # O PostgreSQL executa automaticamente qualquer script .sql encontrado nesta pasta
-      # na primeira vez que o banco de dados é criado.
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # Serviço do Backend Flask
+  backend:
+    # 'build' instrui o Docker Compose a construir uma imagem
+    # a partir do Dockerfile localizado na pasta especificada.
+    build: ./mugiwara-store-backend
+    restart: always
+    # Mapeia a porta 5000 do container para a porta 5000 da sua máquina.
+    ports:
+      - "5000:5000"
+    # Monta o código do backend como um volume.
+    volumes:
+      - ./mugiwara-store-backend:/app
+    # 'depends_on' garante que o serviço 'db' seja iniciado antes do 'backend'.
+    depends_on:
+      - db
