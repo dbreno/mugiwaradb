@@ -1,14 +1,21 @@
-# Ambiente Virtual do Python
-mugiwara-store-backend/venv
+# --- Ambiente Virtual do Python ---
+# Ignora a pasta do ambiente virtual para não enviar bibliotecas de terceiros para o repositório.
+mugiwara-store-backend/venv/
 
-
-# Dados do Banco de Dados Docker
+# --- Dados do Banco de Dados Docker ---
+# Ignora os dados persistentes do PostgreSQL, pois eles são específicos do ambiente local.
 postgres-data/
 
-# Cache do Python
+# --- Cache do Python ---
+# Ignora os arquivos de cache gerados pelo Python.
 mugiwara-store-backend/__pycache__/
 mugiwara-store-backend/__pycache__/*.pyc
 
-# Arquivos de configuração de IDEs/Editores
+# --- Arquivos de Configuração de IDEs/Editores ---
+# Ignora pastas de configuração específicas de editores de código como VSCode e JetBrains.
 .vscode/
 .idea/
+
+# --- Arquivos de Upload do Usuário ---
+# Ignora a pasta onde as imagens dos produtos são salvas para não versionar conteúdo dinâmico.
+mugiwara-store-backend/static/uploads/

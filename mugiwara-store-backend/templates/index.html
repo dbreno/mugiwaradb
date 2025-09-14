@@ -5,90 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mugiwara Store - O Tesouro dos Fãs de One Piece</title>
     
-    <!-- Frameworks Externos -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;500;700&family=Pirata+One&display=swap" rel="stylesheet">
     
-    <!-- Nosso Arquivo de Estilo CSS -->
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body class="antialiased">
     <div id="app" class="min-h-screen flex flex-col">
         {% raw %}
-        <!-- Cabeçalho com Jolly Roger -->
         <header class="header-bg shadow-lg sticky top-0 z-10">
             <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-                <div class="text-white text-2xl lg:text-3xl font-pirata tracking-wider"> <!-- Fonte pirata -->
+                <div class="text-white text-2xl lg:text-3xl font-pirata tracking-wider">
                     <a href="#">Mugiwara Store</a>
                 </div>
             </nav>
         </header>
 
-        <!-- Conteúdo Principal -->
         <main class="container mx-auto px-6 py-8 flex-grow">
             <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                <h1 class="font-pirata text-4xl md:text-5xl text-center text-gold-outline">Nossos Tesouros da Grand Line!</h1> <!-- Com contorno preto -->
-                <button @click="openAddModal" class="btn-primary font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
-                    Adicionar Tesouro
-                </button>
-                <button @click="fetchReport" class="btn-secondary font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1H3a1 1 0 01-1-1V4zm6 0a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1H9a1 1 0 01-1-1V4zm6 0a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" /></svg>
-                    Ver Relatório
-                </button>
+                <h1 class="font-pirata text-4xl md:text-5xl text-center text-gold-outline">Nossos Tesouros da Grand Line!</h1>
+                <div class="flex gap-4">
+                    <button @click="openAddModal" class="btn-primary font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                        Adicionar Tesouro
+                    </button>
+                    <button @click="fetchReport" class="btn-secondary font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1H3a1 1 0 01-1-1V4zm6 0a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1H9a1 1 0 01-1-1V4zm6 0a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" /></svg>
+                        Ver Relatório
+                    </button>
+                </div>
             </div>
 
-            <!-- NOVO: Seção de Filtros -->
             <div class="mb-8 flex flex-col md:flex-row justify-center items-center gap-4">
                 <div class="flex items-center gap-2">
-                    <label for="categoryFilter" class="text-gray-700">Categoria:</label>
                     <select v-model="categoryFilter" id="categoryFilter" class="form-input">
-                        <option value="">Todas</option>
+                        <option value="">Todas as Categorias</option>
                         <option v-for="cat in uniqueCategories" :key="cat" :value="cat">{{ cat }}</option>
                     </select>
                 </div>
                 <div class="flex items-center gap-2">
-                    <label for="sortOption" class="text-gray-700">Ordenar por:</label>
                     <select v-model="sortOption" id="sortOption" class="form-input">
                         <option value="nome_asc">Nome (A-Z)</option>
                         <option value="nome_desc">Nome (Z-A)</option>
-                        <option value="preco_asc">Preço (mais barato)</option>
-                        <option value="preco_desc">Preço (mais caro)</option>
+                        <option value="preco_asc">Preço (Menor)</option>
+                        <option value="preco_desc">Preço (Maior)</option>
                     </select>
                 </div>
                 <div class="flex items-center gap-2">
-                    <label class="text-gray-700">Faixa de Preço:</label>
-                    <input v-model.number="priceMin" type="number" placeholder="Mín" class="form-input w-20">
-                    <input v-model.number="priceMax" type="number" placeholder="Máx" class="form-input w-20">
+                    <input v-model.lazy.number="priceMin" type="number" placeholder="Preço Mín" class="form-input w-24">
+                    <span>-</span>
+                    <input v-model.lazy.number="priceMax" type="number" placeholder="Preço Máx" class="form-input w-24">
                 </div>
             </div>
 
-            <!-- Barra de busca com ícone de lupa pirata -->
             <div class="mb-8 flex justify-center">
-                <input v-model="searchTerm" type="text" placeholder="Busque por tesouros no mar... Yo ho ho!" class="form-input w-1/2 md:w-1/3 mr-2">
-                <button @click="searchProdutos" class="btn-primary font-bold py-2 px-4 rounded-lg flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
-                    Buscar
-                </button>
+                <form @submit.prevent="searchProdutos" class="w-full md:w-1/2 flex gap-2">
+                    <input v-model="searchTerm" type="text" placeholder="Busque por tesouros no mar... Yo ho ho!" class="form-input w-full">
+                    <button type="submit" class="btn-primary font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
+                        Buscar
+                    </button>
+                </form>
             </div>
 
-            <!-- Mensagens de Loading e Erro -->
-            <div v-if="loading" class="text-center text-xl text-gray-700">Procurando no Baú do Tesouro...</div>
-            <div v-if="error" class="text-center text-xl text-red-600">{{ error }}</div>
+            <div v-if="loading" class="text-center text-xl font-pirata text-gold-outline">Procurando no Baú do Tesouro...</div>
+            <div v-if="error" class="text-center text-xl text-red-600 bg-white/50 p-4 rounded-lg">{{ error }}</div>
             
-            <!-- Grid de Produtos (com scroll horizontal em mobile para carrossel) -->
-            <div v-if="!loading && !error" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 overflow-x-auto pb-4 snap-x snap-mandatory">
-                <!-- Card de Produto como baú -->
-                <div v-for="produto in filteredProdutos" :key="produto.id_produto" class="card-bg rounded-lg shadow-md overflow-hidden flex flex-col snap-center min-w-[250px]">
+            <div v-if="!loading && !error" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div v-for="produto in filteredProdutos" :key="produto.id_produto" class="card-bg rounded-lg shadow-md overflow-hidden flex flex-col">
                     <img :src="produto.imagem || 'https://placehold.co/400x300?text=Tesouro'" :alt="produto.nome" class="w-full h-48 object-cover border-b-4 border-[#ffd700]">
                     <div class="p-4 flex flex-col flex-grow">
-                        <h2 class="text-lg text-gold-outline font-pirata truncate" :title="produto.nome">{{ produto.nome }}</h2> <!-- Fonte pirata e vermelho -->
+                        <h2 class="text-lg text-gold-outline font-pirata truncate" :title="produto.nome">{{ produto.nome }}</h2>
                         <p class="text-gray-600 text-sm mt-1 flex-grow">{{ produto.descricao }}</p>
                         <div class="mt-4">
-                            <span class="text-2xl font-bold text-gold-outline">B$ {{ produto.preco.toFixed(2) }}</span> <!-- Com contorno preto -->
+                            <span class="text-2xl font-bold text-gold-outline">B$ {{ produto.preco.toFixed(2) }}</span>
                             <p class="text-sm text-gray-500">Estoque: {{ produto.quantidade_estoque }}</p>
                         </div>
                         <div class="mt-4 pt-4 border-t border-[#c8a064] flex gap-2">
@@ -99,33 +92,45 @@
                 </div>
             </div>
 
-            <!-- Card do Relatório como mapa do tesouro -->
-            <div v-if="showReport && report" class="mt-8 card-bg1 report-card rounded-lg shadow-md p-6">
-                <h2 class="font-pirata text-2xl text-gold-outline mb-4">Relatório de Tesouros</h2> <!-- Com contorno preto -->
-                <p class="text-lg">Total de tesouros distintos: {{ report.total_de_produtos_distintos }}</p>
-                <p class="text-lg">Valor total do estoque: B$ {{ report.valor_total_do_estoque.toFixed(2) }}</p>
+            <div v-if="showReport && report" class="mt-8 card-bg1 report-card rounded-lg shadow-md p-6 animate-fadeIn">
+                <h2 class="font-pirata text-2xl text-gold-outline mb-4">Relatório de Tesouros</h2>
+                <p class="text-lg">Total de tesouros distintos: <strong>{{ report.total_de_produtos_distintos }}</strong></p>
+                <p class="text-lg">Valor total do estoque: <strong>B$ {{ report.valor_total_do_estoque.toFixed(2) }}</strong></p>
                 <button @click="showReport = false" class="btn-secondary mt-4 font-bold py-2 px-6 rounded-lg">Fechar o Mapa</button>
             </div>
         </main>
         
-        <!-- Modal para Adicionar/Editar Produto -->
-        <div v-if="showModal" class="modal-overlay">
-            <div class="modal-content">
+        <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+            <div class="modal-content animate-fadeIn">
                 <h3 class="font-pirata text-2xl text-gold-outline mb-4">{{ isEditMode ? 'Editar Tesouro' : 'Adicionar Novo Tesouro' }}</h3>
                 <form @submit.prevent="saveProduct">
-                    <!-- Campos do Formulário -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input v-model="currentProduct.nome" type="text" placeholder="Nome do Tesouro" class="form-input" required>
                         <input v-model.number="currentProduct.preco" type="number" step="0.01" placeholder="Preço (B$)" class="form-input" required>
-                        <input v-model.number="currentProduct.quantidade_estoque" type="number" placeholder="Quantidade em Estoque" class="form-input" required>
-                        <input v-model="currentProduct.categoria" type="text" placeholder="Categoria (ex: Action Figure)" class="form-input" required>
+                        <input v-model.number="currentProduct.quantidade_estoque" type="number" placeholder="Quantidade" class="form-input" required>
+                        <input v-model="currentProduct.categoria" type="text" placeholder="Categoria" class="form-input" required>
                     </div>
                     <textarea v-model="currentProduct.descricao" placeholder="Descrição do Tesouro" class="form-input mt-4 w-full" rows="3"></textarea>
+                    
+                    <div class="mt-4 border-t border-[#d4bda5] pt-4">
+                        <label class="block font-bold text-gold-outline mb-2">Imagem do Tesouro</label>
+                        <div class="flex gap-2 mb-2">
+                            <button type="button" @click="imageUploadMode = 'url'" :class="{'btn-primary': imageUploadMode === 'url', 'btn-secondary': imageUploadMode !== 'url'}" class="font-bold py-1 px-3 rounded-lg text-sm">URL</button>
+                            <button type="button" @click="imageUploadMode = 'upload'" :class="{'btn-primary': imageUploadMode === 'upload', 'btn-secondary': imageUploadMode !== 'upload'}" class="font-bold py-1 px-3 rounded-lg text-sm">Upload</button>
+                        </div>
+                        <div v-if="imageUploadMode === 'url'">
+                            <input v-model="currentProduct.imagem" type="text" placeholder="https://exemplo.com/imagem.png" class="form-input w-full">
+                        </div>
+                        <div v-if="imageUploadMode === 'upload'">
+                            <input type="file" @change="handleFileUpload" accept="image/*" class="form-input w-full">
+                        </div>
+                        <img v-if="imagePreview" :src="imagePreview" alt="Preview" class="mt-2 rounded-lg max-h-40 object-cover border-2 border-[#d4bda5]">
+                    </div>
                     <div class="mt-4 flex items-center">
                         <input v-model="currentProduct.fabricado_em_mari" type="checkbox" id="mari-check" class="form-checkbox">
                         <label for="mari-check" class="ml-2 font-bold text-gold-outline">Fabricado em Mari?</label>
                     </div>
-                    <!-- Botões de Ação -->
+
                     <div class="mt-6 flex justify-end gap-4">
                         <button type="button" @click="closeModal" class="btn-secondary font-bold py-2 px-6 rounded-lg">Cancelar</button>
                         <button type="submit" class="btn-primary font-bold py-2 px-6 rounded-lg">{{ isEditMode ? 'Salvar Alterações' : 'Cadastrar' }}</button>
@@ -134,7 +139,6 @@
             </div>
         </div>
 
-        <!-- Rodapé com easter egg -->
         <footer class="header-bg py-4 mt-8">
             <div class="container mx-auto text-center text-yellow-200 text-sm">
                 &copy; 2025 Mugiwara Store - Todos os direitos reservados aos Piratas do Chapéu de Palha. "Eu serei o Rei dos Piratas!" - Luffy
@@ -143,7 +147,6 @@
         {% endraw %}
     </div>
 
-    <!-- Nosso Arquivo de Lógica JavaScript -->
     <script src="/static/js/app.js"></script>
 </body>
 </html>

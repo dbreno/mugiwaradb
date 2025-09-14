@@ -1,19 +1,24 @@
-/* Estilos personalizados para a temática */
+/* Arquivo de Estilos Personalizados - Mugiwara Store
+   Este arquivo contém todo o CSS customizado para criar a temática pirata da loja.
+*/
 
-@import url('https://fonts.googleapis.com/css2?family=Pirata+One&display=swap'); /* Fonte pirata adicional */
+/* Importa fontes customizadas do Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Pirata+One&display=swap'); /* Fonte para títulos piratas */
 
+/* --- ESTILOS GERAIS (BODY) --- */
 body {
-    font-family: 'Inter', sans-serif;
-    background-color: #f0e8d9; /* Bege pergaminho como fallback */
-    background-image: url('/static/images/map-background.jpg'); /* Mapa pirata - baixe e adicione */
-    background-size: cover;
-    background-attachment: fixed;
-    background-position: center;
-    color: #3d2c22; /* Marrom escuro */
-    position: relative; /* Para o overlay */
-    overflow-x: hidden; /* Evita scroll horizontal indesejado */
+    font-family: 'Inter', sans-serif; /* Fonte padrão para textos corridos */
+    background-color: #f0e8d9; /* Cor de pergaminho como fallback caso a imagem não carregue */
+    background-image: url('/static/images/map-background.jpg'); /* Imagem de fundo de mapa pirata */
+    background-size: cover; /* Faz a imagem cobrir toda a área */
+    background-attachment: fixed; /* Mantém a imagem fixa durante o scroll */
+    background-position: center; /* Centraliza a imagem */
+    color: #3d2c22; /* Cor de texto principal (marrom escuro) */
+    position: relative; /* Necessário para o posicionamento do pseudo-elemento ::before */
+    overflow-x: hidden; /* Evita a barra de rolagem horizontal */
 }
 
+/* Overlay semi-transparente sobre a imagem de fundo para melhorar a legibilidade do texto */
 body::before {
     content: '';
     position: fixed;
@@ -21,32 +26,34 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(240, 232, 217, 0.7); /* Bege semi-transparente para suavizar a imagem de fundo */
-    z-index: -1; /* Atrás de todo o conteúdo */
+    background-color: rgba(240, 232, 217, 0.7); /* Bege semi-transparente */
+    z-index: -1; /* Coloca o overlay atrás de todo o conteúdo */
 }
 
+/* Classes utilitárias para fontes específicas */
 .font-bungee {
     font-family: 'Bungee', cursive;
 }
 
 .font-pirata {
-    font-family: 'Pirata One', cursive; /* Para títulos piratas */
+    font-family: 'Pirata One', cursive;
 }
 
+/* --- ESTILOS DOS CARDS DE PRODUTO --- */
 .card-bg {
     background-color: #fdfaf2;
     border: 2px solid #d4bda5;
 }
 
 .card-bg {
-    background-color: rgba(253, 250, 242, 0.9);
-    border: 3px solid #c8a064;
-    border-radius: 15px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2), inset 0 0 10px rgba(200,160,100,0.5);
-    transition: transform 0.3s ease-in-out;
-    height: 450px; /* Altura fixa para todos os cards */
+    background-color: rgba(253, 250, 242, 0.9); /* Fundo de "papel" para os cards */
+    border: 3px solid #c8a064; /* Borda dourada */
+    border-radius: 15px; /* Bordas arredondadas */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2), inset 0 0 10px rgba(200,160,100,0.5); /* Sombra para dar profundidade */
+    transition: transform 0.3s ease-in-out; /* Transição suave para o efeito de hover */
+    height: 450px; /* Altura fixa para alinhar os cards na grade */
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Organiza o conteúdo do card em coluna */
 }
 
 .card-bg1 {
@@ -59,12 +66,12 @@ body::before {
     flex-direction: column;
 }
 
-
+/* Efeito de "flutuar" ao passar o mouse sobre o card */
 .card-bg:hover {
     transform: scale(1.05); /* Efeito de "flutuar" no mar */
 }
 
-
+/* Imagem dentro do card */
 .card-bg img {
     width: 100%;
     height: 200px; /* Altura fixa para imagens */
@@ -73,29 +80,34 @@ body::before {
     border-top-right-radius: 12px;
 }
 
+/* Conteúdo de texto dentro do card */
 .card-bg .p-4 {
-    flex-grow: 1;
+    flex-grow: 1; /* Faz esta área crescer para preencher o espaço restante */
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: space-between; /* Distribui o espaço entre o título/descrição e os botões */
 }
 
-/* Responsividade para cards */
+/* --- RESPONSIVIDADE PARA CARDS --- */
+/* Regras aplicadas em telas com largura máxima de 768px (tablets e celulares) */
 @media (max-width: 768px) {
     .card-bg {
-        height: auto; /* Flexível em mobile */
+        height: auto; /* Altura do card se torna flexível em telas menores */
     }
     .card-bg img {
-        height: 150px;
+        height: 150px; /* Diminui a altura da imagem no mobile */
     }
 }
 
+/* --- ESTILOS DO CABEÇALHO E RODAPÉ --- */
 .header-bg {
     background-color: #3d2c22; /* Madeira de navio */
     border-bottom: 6px solid #ffd700; /* Ouro */
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
+/* --- ESTILOS DOS BOTÕES --- */
+/* Botão Primário (Adicionar, Salvar) */
 .btn-primary {
     background-color: #e63946; /* Vermelho Luffy */
     color: white;
@@ -109,7 +121,7 @@ body::before {
     box-shadow: 0 6px 12px rgba(230,57,70,0.4);
 }
 
-/* NOVOS ESTILOS */
+/* Botão Secundário (Editar, Relatório, Cancelar) */
 .btn-secondary {
     background-color: #457b9d; /* Azul oceano */
     color: white;
@@ -123,6 +135,7 @@ body::before {
     box-shadow: 0 6px 12px rgba(69,123,157,0.4);
 }
 
+/* Botão de Perigo (Excluir) */
 .btn-danger {
     background-color: #8d6e63; /* Madeira/corda */
     color: white;
@@ -136,7 +149,8 @@ body::before {
     box-shadow: 0 6px 12px rgba(141,110,99,0.4);
 }
 
-/* Estilos do Modal */
+/* --- ESTILOS DO MODAL --- */
+/* Fundo escurecido do modal */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -150,6 +164,7 @@ body::before {
     z-index: 50;
 }
 
+/* Conteúdo do modal */
 .modal-content {
     background-color: rgba(253, 242, 242, 0.9); /* Pergaminho com transparência */
     background-image: linear-gradient(rgba(71, 140, 243, 0.274), rgba(240, 202, 97, 0.39)), url('/static/images/i01.png'); /* Transparência na textura */
@@ -164,6 +179,7 @@ body::before {
     box-shadow: 0 10px 25px rgba(0,0,0,0.3), inset 0 0 15px rgba(200,160,100,0.3);
 }
 
+/* --- ESTILOS DOS INPUTS DE FORMULÁRIO --- */
 .form-input {
     width: 100%;
     padding: 0.75rem;
@@ -178,15 +194,14 @@ body::before {
     border-radius: 0.25rem;
 }
 
-/* Relatório como tesouro */
-
+/* --- ESTILOS DO CARD DE RELATÓRIO --- */
 .report-card {
     background-image: url('https://www.transparenttextures.com/patterns/treasure-map.png'); /* Textura de mapa do tesouro */
     border: 4px solid #ffd700; /* Ouro */
 }
 
-
-/* Animações para ondas ou aventura */
+/* --- ESTILOS DE TEXTO E ANIMAÇÕES --- */
+/* Animação de onda para o cabeçalho */
 @keyframes wave {
     0% { transform: translateX(0); }
     50% { transform: translateX(-5px); }
@@ -197,7 +212,7 @@ body::before {
     animation: wave 3s infinite ease-in-out;
 }
 
-/* Contorno preto para textos dourados */
+/* Efeito de contorno preto em texto dourado */
 .text-gold-outline {
     color: #ffd700; /* Ouro */
     text-shadow: 
@@ -207,6 +222,7 @@ body::before {
         1px 1px 0 #000; /* Contorno preto */
 }
 
+/* Animação de fade-in para elementos que aparecem na tela */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
@@ -215,4 +231,3 @@ body::before {
 .animate-fadeIn {
     animation: fadeIn 0.5s ease-in-out;
 }
-
