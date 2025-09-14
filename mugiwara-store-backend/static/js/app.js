@@ -6,11 +6,10 @@ createApp({
             produtos: [],
             loading: true,
             error: null,
-            apiUrl: 'http://127.0.0.1:5000/api/produtos',
-            // NOVOS DADOS PARA O CRUD
+            apiUrl: '/api/produtos',  // Alterado para relativo, já que Flask serve tudo
             showModal: false,
             isEditMode: false,
-            currentProduct: { // Objeto para o formulário
+            currentProduct: {
                 id_produto: null,
                 nome: '',
                 descricao: '',
@@ -18,14 +17,17 @@ createApp({
                 quantidade_estoque: 0,
                 categoria: '',
                 fabricado_em_mari: false
-            }
+            },
+            // NOVOS: Para busca e relatório
+            searchTerm: '',
+            report: null,
+            showReport: false
         }
     },
     mounted() {
         this.fetchProdutos();
     },
     methods: {
-        // --- MÉTODOS EXISTENTES ---
         fetchProdutos() {
             this.loading = true;
             this.error = null;
@@ -47,11 +49,8 @@ createApp({
                     this.loading = false;
                 });
         },
-        
-        // --- NOVOS MÉTODOS PARA O MODAL ---
         openAddModal() {
             this.isEditMode = false;
-            // Limpa o formulário para um novo produto
             this.currentProduct = {
                 id_produto: null,
                 nome: '',
@@ -65,18 +64,24 @@ createApp({
         },
         openEditModal(produto) {
             this.isEditMode = true;
-            // Carrega o formulário com os dados do produto a ser editado
             this.currentProduct = { ...produto };
             this.showModal = true;
         },
         closeModal() {
             this.showModal = false;
         },
-
-        // --- NOVOS MÉTODOS PARA O CRUD ---
         saveProduct() {
+            // NOVO: Validações no frontend
+            if (this.currentProduct.preco <= 0) {
+                alert('O preço deve ser maior que zero!');
+                return;
+            }
+            if (this.currentProduct.quantidade_estoque < 0) {
+                alert('A quantidade em estoque não pode ser negativa!');
+                return;
+            }
+
             if (this.isEditMode) {
-                // Lógica de ATUALIZAÇÃO (PUT)
                 fetch(`${this.apiUrl}/${this.currentProduct.id_produto}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -84,12 +89,11 @@ createApp({
                 })
                 .then(response => response.json())
                 .then(() => {
-                    this.fetchProdutos(); // Atualiza a lista
+                    this.fetchProdutos();
                     this.closeModal();
                 })
                 .catch(error => console.error('Erro ao atualizar produto:', error));
             } else {
-                // Lógica de CRIAÇÃO (POST)
                 fetch(this.apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -97,25 +101,58 @@ createApp({
                 })
                 .then(response => response.json())
                 .then(() => {
-                    this.fetchProdutos(); // Atualiza a lista
+                    this.fetchProdutos();
                     this.closeModal();
                 })
                 .catch(error => console.error('Erro ao adicionar produto:', error));
             }
         },
         deleteProduct(id, nome) {
-            // Pede confirmação antes de excluir
             if (confirm(`Tem certeza que quer jogar o tesouro "${nome}" no mar?`)) {
                 fetch(`${this.apiUrl}/${id}`, {
                     method: 'DELETE'
                 })
                 .then(response => response.json())
                 .then(() => {
-                    this.fetchProdutos(); // Atualiza a lista
+                    this.fetchProdutos();
                 })
                 .catch(error => console.error('Erro ao deletar produto:', error));
             }
+        },
+        // NOVO: Método para busca
+        searchProdutos() {
+            if (!this.searchTerm) {
+                this.fetchProdutos();  // Se vazio, volta para todos
+                return;
+            }
+            this.loading = true;
+            fetch(`/api/produtos/buscar?nome=${encodeURIComponent(this.searchTerm)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Falha na busca!');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    this.produtos = data;
+                })
+                .catch(error => {
+                    console.error('Erro na busca:', error);
+                    this.error = error.message;
+                })
+                .finally(() => {
+                    this.loading = false;
+                });
+        },
+        // NOVO: Método para relatório
+        fetchReport() {
+            fetch('/api/produtos/relatorio')
+                .then(response => response.json())
+                .then(data => {
+                    this.report = data;
+                    this.showReport = true;
+                })
+                .catch(error => console.error('Erro ao carregar relatório:', error));
         }
     }
 }).mount('#app')
-

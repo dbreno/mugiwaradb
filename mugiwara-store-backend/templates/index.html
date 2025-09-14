@@ -13,10 +13,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     
     <!-- Nosso Arquivo de Estilo CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body class="antialiased">
     <div id="app" class="min-h-screen flex flex-col">
+        {% raw %}
         <!-- Cabeçalho -->
         <header class="header-bg shadow-lg sticky top-0 z-10">
             <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -37,6 +38,19 @@
                 <button @click="openAddModal" class="btn-primary font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
                     Adicionar Tesouro
+                </button>
+                <button @click="fetchReport" class="btn-secondary font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1H3a1 1 0 01-1-1V4zm6 0a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1H9a1 1 0 01-1-1V4zm6 0a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" /></svg>
+                    Ver Relatório
+                </button>
+            </div>
+
+            <!-- NOVO: Barra de busca -->
+            <div class="mb-8 flex justify-center">
+                <input v-model="searchTerm" type="text" placeholder="Busque por nome do tesouro..." class="form-input w-1/2 md:w-1/3 mr-2">
+                <button @click="searchProdutos" class="btn-primary font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
+                    Buscar
                 </button>
             </div>
 
@@ -62,6 +76,14 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- NOVO: Card do Relatório -->
+            <div v-if="showReport && report" class="mt-8 card-bg rounded-lg shadow-md p-6">
+                <h2 class="font-bungee text-2xl text-[#3d2c22] mb-4">Relatório de Estoque</h2>
+                <p class="text-lg">Total de produtos distintos: {{ report.total_de_produtos_distintos }}</p>
+                <p class="text-lg">Valor total do estoque: B$ {{ report.valor_total_do_estoque.toFixed(2) }}</p>
+                <button @click="showReport = false" class="btn-secondary mt-4 font-bold py-2 px-6 rounded-lg">Fechar</button>
             </div>
         </main>
         
@@ -91,17 +113,16 @@
             </div>
         </div>
 
-
         <!-- Rodapé -->
         <footer class="header-bg py-4 mt-8">
             <div class="container mx-auto text-center text-yellow-200 text-sm">
                 &copy; 2025 Mugiwara Store - Todos os direitos reservados aos Piratas do Chapéu de Palha.
             </div>
         </footer>
+        {% endraw %}
     </div>
 
     <!-- Nosso Arquivo de Lógica JavaScript -->
-    <script src="js/app.js"></script>
+    <script src="/static/js/app.js"></script>
 </body>
 </html>
-

@@ -1,5 +1,5 @@
 import psycopg2
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template  # Adicione render_template
 from flask_cors import CORS
 
 # --- Configuração do Banco de Dados ---
@@ -82,7 +82,8 @@ class ProdutoDAO:
             return id_produto_novo
         except Exception as e:
             print(f"Erro ao inserir produto: {e}")
-            conn.rollback()
+            if 'conn' in locals():
+                conn.rollback()
             return None
         finally:
             if 'conn' in locals() and conn is not None:
@@ -128,7 +129,8 @@ class ProdutoDAO:
             return True
         except Exception as e:
             print(f"Erro ao alterar produto: {e}")
-            conn.rollback()
+            if 'conn' in locals():
+                conn.rollback()
             return False
         finally:
             if 'conn' in locals() and conn is not None:
@@ -146,7 +148,8 @@ class ProdutoDAO:
             return True
         except Exception as e:
             print(f"Erro ao remover produto: {e}")
-            conn.rollback()
+            if 'conn' in locals():
+                conn.rollback()
             return False
         finally:
             if 'conn' in locals() and conn is not None:
@@ -229,10 +232,10 @@ def relatorio_estoque_api():
     relatorio = dao.gerarRelatorioEstoque()
     return jsonify(relatorio)
 
-# Rota inicial apenas para teste de status do servidor
+# Rota raiz: Agora serve o index.html diretamente
 @app.route("/")
-def hello_world():
-    return "<p>O servidor da Mugiwara Store está no ar dereshishi!</p>"
+def index():
+    return render_template('index.html')  # Renderiza o template index.html
 
 # Permite que o servidor rode
 if __name__ == '__main__':
