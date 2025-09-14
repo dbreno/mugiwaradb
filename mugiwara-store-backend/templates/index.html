@@ -30,7 +30,7 @@
         <!-- Conteúdo Principal -->
         <main class="container mx-auto px-6 py-8 flex-grow">
             <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                <h1 class="font-pirata text-4xl md:text-5xl text-center text-gold-outline">Nossos Tesouros do Grand Line!</h1> <!-- Com contorno preto -->
+                <h1 class="font-pirata text-4xl md:text-5xl text-center text-gold-outline">Nossos Tesouros da Grand Line!</h1> <!-- Com contorno preto -->
                 <button @click="openAddModal" class="btn-primary font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
                     Adicionar Tesouro
@@ -100,7 +100,7 @@
             </div>
 
             <!-- Card do Relatório como mapa do tesouro -->
-            <div v-if="showReport && report" class="mt-8 card-bg report-card rounded-lg shadow-md p-6">
+            <div v-if="showReport && report" class="mt-8 card-bg1 report-card rounded-lg shadow-md p-6">
                 <h2 class="font-pirata text-2xl text-gold-outline mb-4">Relatório de Tesouros</h2> <!-- Com contorno preto -->
                 <p class="text-lg">Total de tesouros distintos: {{ report.total_de_produtos_distintos }}</p>
                 <p class="text-lg">Valor total do estoque: B$ {{ report.valor_total_do_estoque.toFixed(2) }}</p>
