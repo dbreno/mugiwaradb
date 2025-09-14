@@ -101,7 +101,7 @@
         </main>
         
         <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-            <div class="modal-content animate-fadeIn">
+            <div class="modal-content animate-fadeIn overflow-y-auto max-h-[90vh]">
                 <h3 class="font-pirata text-2xl text-gold-outline mb-4">{{ isEditMode ? 'Editar Tesouro' : 'Adicionar Novo Tesouro' }}</h3>
                 <form @submit.prevent="saveProduct">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
