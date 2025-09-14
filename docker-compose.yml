@@ -1,5 +1,7 @@
+# docker-compose.yml
+
 services:
-  # Serviço do banco de dados
+  # Serviço do banco de dados (sem alterações)
   db:
     image: postgres:16
     restart: always
@@ -15,16 +17,19 @@ services:
 
   # Serviço do Backend Flask
   backend:
-    # 'build' instrui o Docker Compose a construir uma imagem
-    # a partir do Dockerfile localizado na pasta especificada.
     build: ./mugiwara-store-backend
     restart: always
-    # Mapeia a porta 5000 do container para a porta 5000 da sua máquina.
     ports:
       - "5000:5000"
-    # Monta o código do backend como um volume.
     volumes:
       - ./mugiwara-store-backend:/app
-    # 'depends_on' garante que o serviço 'db' seja iniciado antes do 'backend'.
+    # Passa as variáveis de ambiente para o container do backend
+    environment:
+      - POSTGRES_DB=mugiwara_store
+      - POSTGRES_USER=luffy
+      - POSTGRES_PASSWORD=meusonhoeh
+      - DB_HOST=db # Aponta para o serviço 'db'
+      - FLASK_ENV=development 
+      - FLASK_APP=app.py
     depends_on:
       - db

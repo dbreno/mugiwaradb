@@ -23,10 +23,11 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 # Dicionário com as credenciais para conexão com o banco de dados PostgreSQL.
 # Estes dados são usados pelo psycopg2 para estabelecer a conexão.
 db_config = {
-    "host": "localhost",
-    "database": "mugiwara_store",
-    "user": "luffy",
-    "password": "meusonhoeh"
+    # Dentro do Docker, o host não é 'localhost', mas o nome do serviço do banco ('db').
+    "host": os.getenv("DB_HOST", "db"), 
+    "database": os.getenv("POSTGRES_DB", "mugiwara_store"),
+    "user": os.getenv("POSTGRES_USER", "luffy"),
+    "password": os.getenv("POSTGRES_PASSWORD", "meusonhoeh")
 }
 
 # --- Classe de Acesso a Dados (DAO) para Produto ---
