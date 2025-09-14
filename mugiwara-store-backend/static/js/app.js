@@ -26,6 +26,11 @@ createApp({
     },
     mounted() {
         this.fetchProdutos();
+        setTimeout(() => {
+            document.querySelectorAll('.card-bg').forEach(card => {
+                card.classList.add('animate-fadeIn');
+            });
+        }, 100);
     },
     methods: {
         fetchProdutos() {

@@ -10,7 +10,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;500;700&family=Pirata+One&display=swap" rel="stylesheet">
     
     <!-- Nosso Arquivo de Estilo CSS -->
     <link rel="stylesheet" href="/static/css/style.css">
@@ -18,15 +18,11 @@
 <body class="antialiased">
     <div id="app" class="min-h-screen flex flex-col">
         {% raw %}
-        <!-- Cabeçalho -->
+        <!-- Cabeçalho com Jolly Roger -->
         <header class="header-bg shadow-lg sticky top-0 z-10">
             <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-                <div class="text-white text-2xl lg:text-3xl font-bungee tracking-wider">
+                <div class="text-white text-2xl lg:text-3xl font-pirata tracking-wider"> <!-- Fonte pirata -->
                     <a href="#">Mugiwara Store</a>
-                </div>
-                <div>
-                    <!-- Ícone do Chapéu de Palha (SVG) -->
-                    <svg class="h-10 w-10 text-yellow-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 6a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 9a1 1 0 00-1 1v1a1 1 0 100 2v1a1 1 0 100-2v-1a1 1 0 00-1-1zm16 0a1 1 0 00-1 1v1a1 1 0 100 2v-1a1 1 0 100-2v-1a1 1 0 00-1-1zM5 15a1 1 0 100 2h10a1 1 0 100-2H5z"></path></svg>
                 </div>
             </nav>
         </header>
@@ -34,7 +30,7 @@
         <!-- Conteúdo Principal -->
         <main class="container mx-auto px-6 py-8 flex-grow">
             <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                <h1 class="font-bungee text-4xl md:text-5xl text-center text-[#3d2c22]">Nossos Tesouros</h1>
+                <h1 class="font-pirata text-4xl md:text-5xl text-center text-gold-outline">Nossos Tesouros do Grand Line!</h1> <!-- Com contorno preto -->
                 <button @click="openAddModal" class="btn-primary font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
                     Adicionar Tesouro
@@ -45,9 +41,9 @@
                 </button>
             </div>
 
-            <!-- NOVO: Barra de busca -->
+            <!-- Barra de busca com ícone de lupa pirata -->
             <div class="mb-8 flex justify-center">
-                <input v-model="searchTerm" type="text" placeholder="Busque por nome do tesouro..." class="form-input w-1/2 md:w-1/3 mr-2">
+                <input v-model="searchTerm" type="text" placeholder="Busque por tesouros no mar... Yo ho ho!" class="form-input w-1/2 md:w-1/3 mr-2">
                 <button @click="searchProdutos" class="btn-primary font-bold py-2 px-4 rounded-lg flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
                     Buscar
@@ -58,19 +54,19 @@
             <div v-if="loading" class="text-center text-xl text-gray-700">Procurando no Baú do Tesouro...</div>
             <div v-if="error" class="text-center text-xl text-red-600">{{ error }}</div>
             
-            <!-- Grid de Produtos -->
-            <div v-if="!loading && !error" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <!-- Card de Produto -->
-                <div v-for="produto in produtos" :key="produto.id_produto" class="card-bg rounded-lg shadow-md overflow-hidden flex flex-col">
-                    <img :src="'https://placehold.co/400x300/3d2c22/f0e8d9?text=' + encodeURIComponent(produto.categoria)" :alt="produto.nome" class="w-full h-48 object-cover">
+            <!-- Grid de Produtos (com scroll horizontal em mobile para carrossel) -->
+            <div v-if="!loading && !error" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 overflow-x-auto pb-4 snap-x snap-mandatory">
+                <!-- Card de Produto como baú -->
+                <div v-for="produto in produtos" :key="produto.id_produto" class="card-bg rounded-lg shadow-md overflow-hidden flex flex-col snap-center min-w-[250px]">
+                    <img :src="'https://placehold.co/400x300/3d2c22/f0e8d9?text=' + encodeURIComponent(produto.categoria)" :alt="produto.nome" class="w-full h-48 object-cover border-b-4 border-[#ffd700]">
                     <div class="p-4 flex flex-col flex-grow">
-                        <h2 class="text-lg font-bold text-[#3d2c22] truncate" :title="produto.nome">{{ produto.nome }}</h2>
+                        <h2 class="text-lg text-gold-outline font-pirata truncate" :title="produto.nome">{{ produto.nome }}</h2> <!-- Fonte pirata e vermelho -->
                         <p class="text-gray-600 text-sm mt-1 flex-grow">{{ produto.descricao }}</p>
                         <div class="mt-4">
-                            <span class="text-2xl font-bold text-[#e63946]">B$ {{ produto.preco.toFixed(2) }}</span>
+                            <span class="text-2xl font-bold text-gold-outline">B$ {{ produto.preco.toFixed(2) }}</span> <!-- Com contorno preto -->
                             <p class="text-sm text-gray-500">Estoque: {{ produto.quantidade_estoque }}</p>
                         </div>
-                        <div class="mt-4 pt-4 border-t border-gray-200 flex gap-2">
+                        <div class="mt-4 pt-4 border-t border-[#c8a064] flex gap-2">
                             <button @click="openEditModal(produto)" class="btn-secondary w-full font-bold py-2 px-4 rounded-lg">Editar</button>
                             <button @click="deleteProduct(produto.id_produto, produto.nome)" class="btn-danger w-full font-bold py-2 px-4 rounded-lg">Excluir</button>
                         </div>
@@ -78,31 +74,31 @@
                 </div>
             </div>
 
-            <!-- NOVO: Card do Relatório -->
-            <div v-if="showReport && report" class="mt-8 card-bg rounded-lg shadow-md p-6">
-                <h2 class="font-bungee text-2xl text-[#3d2c22] mb-4">Relatório de Estoque</h2>
-                <p class="text-lg">Total de produtos distintos: {{ report.total_de_produtos_distintos }}</p>
+            <!-- Card do Relatório como mapa do tesouro -->
+            <div v-if="showReport && report" class="mt-8 card-bg report-card rounded-lg shadow-md p-6">
+                <h2 class="font-pirata text-2xl text-gold-outline mb-4">Relatório de Tesouros</h2> <!-- Com contorno preto -->
+                <p class="text-lg">Total de tesouros distintos: {{ report.total_de_produtos_distintos }}</p>
                 <p class="text-lg">Valor total do estoque: B$ {{ report.valor_total_do_estoque.toFixed(2) }}</p>
-                <button @click="showReport = false" class="btn-secondary mt-4 font-bold py-2 px-6 rounded-lg">Fechar</button>
+                <button @click="showReport = false" class="btn-secondary mt-4 font-bold py-2 px-6 rounded-lg">Fechar o Mapa</button>
             </div>
         </main>
         
         <!-- Modal para Adicionar/Editar Produto -->
         <div v-if="showModal" class="modal-overlay">
             <div class="modal-content">
-                <h3 class="font-bungee text-2xl text-[#3d2c22] mb-4">{{ isEditMode ? 'Editar Tesouro' : 'Adicionar Novo Tesouro' }}</h3>
+                <h3 class="font-pirata text-2xl text-gold-outline mb-4">{{ isEditMode ? 'Editar Tesouro' : 'Adicionar Novo Tesouro' }}</h3>
                 <form @submit.prevent="saveProduct">
                     <!-- Campos do Formulário -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input v-model="currentProduct.nome" type="text" placeholder="Nome do Produto" class="form-input" required>
+                        <input v-model="currentProduct.nome" type="text" placeholder="Nome do Tesouro" class="form-input" required>
                         <input v-model.number="currentProduct.preco" type="number" step="0.01" placeholder="Preço (B$)" class="form-input" required>
                         <input v-model.number="currentProduct.quantidade_estoque" type="number" placeholder="Quantidade em Estoque" class="form-input" required>
-                        <input v-model="currentProduct.categoria" type="text" placeholder="Categoria" class="form-input" required>
+                        <input v-model="currentProduct.categoria" type="text" placeholder="Categoria (ex: Action Figure)" class="form-input" required>
                     </div>
-                    <textarea v-model="currentProduct.descricao" placeholder="Descrição" class="form-input mt-4 w-full" rows="3"></textarea>
+                    <textarea v-model="currentProduct.descricao" placeholder="Descrição do Tesouro" class="form-input mt-4 w-full" rows="3"></textarea>
                     <div class="mt-4 flex items-center">
                         <input v-model="currentProduct.fabricado_em_mari" type="checkbox" id="mari-check" class="form-checkbox">
-                        <label for="mari-check" class="ml-2 text-gray-700">Fabricado em Mari?</label>
+                        <label for="mari-check" class="ml-2 font-bold text-gold-outline">Fabricado em Mari?</label>
                     </div>
                     <!-- Botões de Ação -->
                     <div class="mt-6 flex justify-end gap-4">
@@ -113,10 +109,10 @@
             </div>
         </div>
 
-        <!-- Rodapé -->
+        <!-- Rodapé com easter egg -->
         <footer class="header-bg py-4 mt-8">
             <div class="container mx-auto text-center text-yellow-200 text-sm">
-                &copy; 2025 Mugiwara Store - Todos os direitos reservados aos Piratas do Chapéu de Palha.
+                &copy; 2025 Mugiwara Store - Todos os direitos reservados aos Piratas do Chapéu de Palha. "Eu serei o Rei dos Piratas!" - Luffy
             </div>
         </footer>
         {% endraw %}
