@@ -1,14 +1,14 @@
 # Mugiwara Store DB 🏴‍☠️
 
-![One Piece Banner](https://i.imgur.com/8z2b2Y2.png)
+![One Piece Banner](https://4kwallpapers.com/images/wallpapers/one-piece-character-5120x2880-15328.jpeg)
 
-## 📜 Sobre o Projeto
+## Sobre o Projeto
 
 **Mugiwara Store** é um sistema de e-commerce web totalmente funcional, desenvolvido como parte do projeto da disciplina de Banco de Dados I. A aplicação consiste em um CRUD (Create, Read, Update, Delete) completo para o gerenciamento de produtos de uma loja com a temática do universo de One Piece.
 
 Este repositório contém a **Parte 1** do projeto, que foca no núcleo de gerenciamento de produtos e estoque, com uma API RESTful no backend e uma interface reativa e estilizada no frontend. Toda a aplicação é orquestrada com Docker, garantindo um ambiente de desenvolvimento consistente e de fácil configuração.
 
-## ✨ Funcionalidades Implementadas
+## Funcionalidades Implementadas
 
 A aplicação web implementa todas as funcionalidades CRUD exigidas e vai além, oferecendo uma experiência de usuário rica e moderna.
 
@@ -28,7 +28,7 @@ A aplicação web implementa todas as funcionalidades CRUD exigidas e vai além,
 * **Relatórios:**
     * Geração de um relatório de estoque que exibe a quantidade total de produtos distintos e o valor total do inventário.
 
-## 🛠️ Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 O projeto foi construído com uma stack de tecnologias modernas e eficientes:
 
@@ -45,7 +45,7 @@ O projeto foi construído com uma stack de tecnologias modernas e eficientes:
 * **Ambiente:**
     * **Docker & Docker Compose:** Para containerização e orquestração dos serviços, garantindo um ambiente de desenvolvimento consistente e isolado.
 
-## 🚀 Como Executar o Projeto
+## Como Executar o Projeto
 
 Graças ao Docker, colocar a aplicação para rodar é um processo simples e rápido.
 
@@ -80,7 +80,7 @@ Graças ao Docker, colocar a aplicação para rodar é um processo simples e rá
     docker compose down
     ```
 
-## 🗃️ Acesso ao Banco de Dados (DBeaver/Outros)
+## Acesso ao Banco de Dados (DBeaver/Outros)
 
 Enquanto os contêineres estiverem rodando, você pode se conectar ao banco de dados PostgreSQL usando sua ferramenta de preferência (como o DBeaver) com as seguintes credenciais:
 
