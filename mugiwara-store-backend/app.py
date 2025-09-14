@@ -1,5 +1,6 @@
 import psycopg2
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 # --- Configuração do Banco de Dados ---
 db_config = {
@@ -151,24 +152,16 @@ class ProdutoDAO:
             if 'conn' in locals() and conn is not None:
                 conn.close()
 
-    # --- NOVO MÉTODO PARA O RELATÓRIO ---
     def gerarRelatorioEstoque(self):
         relatorio = {}
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
-            
-            # Query SQL que usa funções de agregação para calcular os totais
             sql_query = "SELECT COUNT(*), SUM(preco * quantidade_estoque) FROM PRODUTO;"
-            
             cursor.execute(sql_query)
-            
-            # fetchone() pois a query de agregação sempre retorna uma única linha
             resultado = cursor.fetchone()
-            
             cursor.close()
             conn.close()
-            
             if resultado:
                 relatorio = {
                     'total_de_produtos_distintos': resultado[0],
@@ -178,11 +171,11 @@ class ProdutoDAO:
             print(f"Erro ao gerar relatório de estoque: {e}")
         return relatorio
 
-
 # --- Aplicação Flask ---
 app = Flask(__name__)
+CORS(app)
 
-# Rota para LER (GET) e CRIAR (POST) a lista de produtos
+# --- ROTAS DA API ---
 @app.route("/api/produtos", methods=['GET', 'POST'])
 def produtos_api():
     dao = ProdutoDAO()
@@ -196,7 +189,6 @@ def produtos_api():
         else:
             return jsonify({"status": "erro", "mensagem": "Não foi possível criar o produto."}), 500
 
-# Rota para um produto específico (GET, PUT, DELETE)
 @app.route("/api/produtos/<int:id_produto>", methods=['GET', 'PUT', 'DELETE'])
 def produto_especifico_api(id_produto):
     dao = ProdutoDAO()
@@ -221,7 +213,6 @@ def produto_especifico_api(id_produto):
         else:
             return jsonify({"status": "erro", "mensagem": "Não foi possível remover o produto."}), 500
 
-# Rota para busca de produtos
 @app.route("/api/produtos/buscar", methods=['GET'])
 def buscar_produto_api():
     nome = request.args.get('nome')
@@ -232,15 +223,13 @@ def buscar_produto_api():
     produtos = dao.pesquisarPorNome(nome)
     return jsonify(produtos)
 
-# --- NOVA ROTA PARA O RELATÓRIO DE ESTOQUE ---
 @app.route("/api/produtos/relatorio", methods=['GET'])
 def relatorio_estoque_api():
     dao = ProdutoDAO()
     relatorio = dao.gerarRelatorioEstoque()
     return jsonify(relatorio)
 
-
-# Rota inicial
+# Rota inicial apenas para teste de status do servidor
 @app.route("/")
 def hello_world():
     return "<p>O servidor da Mugiwara Store está no ar dereshishi!</p>"
