@@ -1,6 +1,6 @@
 # Mugiwara Store DB 🏴‍☠️
 
-![One Piece Banner](https://i.ibb.co/Kz7gzM6B/one-piece-character-5120x2880-15328.jpg)
+![One Piece Banner](./mugiwara-store-backend/static/images/one-piece-character-5120x2880-15328.jpg)
 
 ## Sobre o Projeto
 
