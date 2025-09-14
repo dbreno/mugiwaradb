@@ -1,127 +1,249 @@
 import psycopg2
-from flask import Flask, jsonify, request # <-- CORREÇÃO AQUI!
+from flask import Flask, jsonify, request
 
 # --- Configuração do Banco de Dados ---
-# Substitua com suas credenciais do docker-compose.yml
 db_config = {
     "host": "localhost",
     "database": "mugiwara_store",
     "user": "luffy",
-    "password": "meusonhoeh" 
+    "password": "meusonhoeh"
 }
 
 # --- Classe de Acesso a Dados (DAO) para Produto ---
 class ProdutoDAO:
     def __init__(self):
-        # A DAO usa a configuração definida acima
         self.db_config = db_config
 
     def _get_connection(self):
-        # Método privado para obter uma conexão com o banco
         return psycopg2.connect(**self.db_config)
 
     def listarTodos(self):
         produtos = []
         try:
-            # Pega uma conexão
             conn = self._get_connection()
             cursor = conn.cursor()
-
             sql_query = "SELECT id_produto, nome, descricao, preco, quantidade_estoque, categoria, fabricado_em_mari FROM PRODUTO ORDER BY nome;"
-            
-            # Executa a query
             cursor.execute(sql_query)
-            
-            # Busca todos os resultados
             resultados = cursor.fetchall()
-            
-            # Fecha a conexão
             cursor.close()
             conn.close()
-            
-            # Converte os resultados (tuplas) em uma lista de dicionários para ser mais fácil de usar
             for resultado in resultados:
                 produtos.append({
                     'id_produto': resultado[0],
                     'nome': resultado[1],
                     'descricao': resultado[2],
-                    'preco': float(resultado[3]), # Converte Decimal para float
+                    'preco': float(resultado[3]),
                     'quantidade_estoque': resultado[4],
                     'categoria': resultado[5],
                     'fabricado_em_mari': resultado[6]
                 })
-
         except Exception as e:
             print(f"Erro ao listar produtos: {e}")
-            
         return produtos
-      
+
+    def pesquisarPorNome(self, nome):
+        produtos = []
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            sql_query = "SELECT * FROM PRODUTO WHERE nome ILIKE %s;"
+            cursor.execute(sql_query, (f'%{nome}%',))
+            resultados = cursor.fetchall()
+            cursor.close()
+            conn.close()
+            for resultado in resultados:
+                produtos.append({
+                    'id_produto': resultado[0], 'nome': resultado[1], 'descricao': resultado[2],
+                    'preco': float(resultado[3]), 'quantidade_estoque': resultado[4],
+                    'categoria': resultado[5], 'fabricado_em_mari': resultado[6]
+                })
+        except Exception as e:
+            print(f"Erro ao pesquisar produtos por nome: {e}")
+        return produtos
+
     def inserir(self, produto):
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
-
-            # SQL com placeholders (%s) para evitar SQL Injection
             sql_query = """
                 INSERT INTO PRODUTO (nome, descricao, preco, quantidade_estoque, categoria, fabricado_em_mari)
                 VALUES (%s, %s, %s, %s, %s, %s) RETURNING id_produto;
             """
-            
-            # Dados a serem inseridos
             data = (
-                produto['nome'],
-                produto['descricao'],
-                produto['preco'],
-                produto['quantidade_estoque'],
-                produto['categoria'],
-                produto['fabricado_em_mari']
+                produto['nome'], produto['descricao'], produto['preco'],
+                produto['quantidade_estoque'], produto['categoria'], produto['fabricado_em_mari']
             )
-
-            # Executa a query com os dados
             cursor.execute(sql_query, data)
-            
-            # Pega o ID do produto recém-criado
             id_produto_novo = cursor.fetchone()[0]
-            
-            # Confirma a transação
             conn.commit()
-
             cursor.close()
             conn.close()
-
             return id_produto_novo
-
         except Exception as e:
             print(f"Erro ao inserir produto: {e}")
+            conn.rollback()
             return None
+        finally:
+            if 'conn' in locals() and conn is not None:
+                conn.close()
+
+    def exibirUm(self, id_produto):
+        produto = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            sql_query = "SELECT * FROM PRODUTO WHERE id_produto = %s;"
+            cursor.execute(sql_query, (id_produto,))
+            resultado = cursor.fetchone()
+            cursor.close()
+            conn.close()
+            if resultado:
+                produto = {
+                    'id_produto': resultado[0], 'nome': resultado[1], 'descricao': resultado[2],
+                    'preco': float(resultado[3]), 'quantidade_estoque': resultado[4],
+                    'categoria': resultado[5], 'fabricado_em_mari': resultado[6]
+                }
+        except Exception as e:
+            print(f"Erro ao buscar produto: {e}")
+        return produto
+
+    def alterar(self, id_produto, produto_data):
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            sql_query = """
+                UPDATE PRODUTO SET nome=%s, descricao=%s, preco=%s, quantidade_estoque=%s, categoria=%s, fabricado_em_mari=%s
+                WHERE id_produto = %s;
+            """
+            data = (
+                produto_data['nome'], produto_data['descricao'], produto_data['preco'],
+                produto_data['quantidade_estoque'], produto_data['categoria'], produto_data['fabricado_em_mari'],
+                id_produto
+            )
+            cursor.execute(sql_query, data)
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return True
+        except Exception as e:
+            print(f"Erro ao alterar produto: {e}")
+            conn.rollback()
+            return False
+        finally:
+            if 'conn' in locals() and conn is not None:
+                conn.close()
+
+    def remover(self, id_produto):
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            sql_query = "DELETE FROM PRODUTO WHERE id_produto = %s;"
+            cursor.execute(sql_query, (id_produto,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return True
+        except Exception as e:
+            print(f"Erro ao remover produto: {e}")
+            conn.rollback()
+            return False
+        finally:
+            if 'conn' in locals() and conn is not None:
+                conn.close()
+
+    # --- NOVO MÉTODO PARA O RELATÓRIO ---
+    def gerarRelatorioEstoque(self):
+        relatorio = {}
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            # Query SQL que usa funções de agregação para calcular os totais
+            sql_query = "SELECT COUNT(*), SUM(preco * quantidade_estoque) FROM PRODUTO;"
+            
+            cursor.execute(sql_query)
+            
+            # fetchone() pois a query de agregação sempre retorna uma única linha
+            resultado = cursor.fetchone()
+            
+            cursor.close()
+            conn.close()
+            
+            if resultado:
+                relatorio = {
+                    'total_de_produtos_distintos': resultado[0],
+                    'valor_total_do_estoque': float(resultado[1]) if resultado[1] is not None else 0.0
+                }
+        except Exception as e:
+            print(f"Erro ao gerar relatório de estoque: {e}")
+        return relatorio
+
 
 # --- Aplicação Flask ---
 app = Flask(__name__)
 
-# Rota para LER (GET) produtos
-@app.route("/api/produtos", methods=['GET'])
-def get_produtos():
+# Rota para LER (GET) e CRIAR (POST) a lista de produtos
+@app.route("/api/produtos", methods=['GET', 'POST'])
+def produtos_api():
     dao = ProdutoDAO()
-    produtos = dao.listarTodos()
+    if request.method == 'GET':
+        return jsonify(dao.listarTodos())
+    elif request.method == 'POST':
+        dados_do_produto = request.get_json()
+        id_novo = dao.inserir(dados_do_produto)
+        if id_novo:
+            return jsonify({"status": "sucesso", "mensagem": "Produto criado!", "id_produto": id_novo}), 201
+        else:
+            return jsonify({"status": "erro", "mensagem": "Não foi possível criar o produto."}), 500
+
+# Rota para um produto específico (GET, PUT, DELETE)
+@app.route("/api/produtos/<int:id_produto>", methods=['GET', 'PUT', 'DELETE'])
+def produto_especifico_api(id_produto):
+    dao = ProdutoDAO()
+    
+    if request.method == 'GET':
+        produto = dao.exibirUm(id_produto)
+        if produto:
+            return jsonify(produto)
+        else:
+            return jsonify({"status": "erro", "mensagem": "Produto não encontrado."}), 404
+
+    elif request.method == 'PUT':
+        dados_do_produto = request.get_json()
+        if dao.alterar(id_produto, dados_do_produto):
+            return jsonify({"status": "sucesso", "mensagem": "Produto alterado!"})
+        else:
+            return jsonify({"status": "erro", "mensagem": "Não foi possível alterar o produto."}), 500
+
+    elif request.method == 'DELETE':
+        if dao.remover(id_produto):
+            return jsonify({"status": "sucesso", "mensagem": "Produto removido!"})
+        else:
+            return jsonify({"status": "erro", "mensagem": "Não foi possível remover o produto."}), 500
+
+# Rota para busca de produtos
+@app.route("/api/produtos/buscar", methods=['GET'])
+def buscar_produto_api():
+    nome = request.args.get('nome')
+    if not nome:
+        return jsonify({"status": "erro", "mensagem": "Parâmetro 'nome' é obrigatório."}), 400
+    
+    dao = ProdutoDAO()
+    produtos = dao.pesquisarPorNome(nome)
     return jsonify(produtos)
 
-# Rota para CRIAR (POST) produtos
-@app.route("/api/produtos", methods=['POST'])
-def post_produto():
+# --- NOVA ROTA PARA O RELATÓRIO DE ESTOQUE ---
+@app.route("/api/produtos/relatorio", methods=['GET'])
+def relatorio_estoque_api():
     dao = ProdutoDAO()
-    dados_do_produto = request.get_json()
-    
-    id_novo = dao.inserir(dados_do_produto)
-    
-    if id_novo:
-        return jsonify({"status": "sucesso", "mensagem": "Produto criado!", "id_produto": id_novo}), 201
-    else:
-        return jsonify({"status": "erro", "mensagem": "Não foi possível criar o produto."}), 500
+    relatorio = dao.gerarRelatorioEstoque()
+    return jsonify(relatorio)
+
 
 # Rota inicial
 @app.route("/")
 def hello_world():
-    return "<p>O servidor da Mugiwara Store está no ar!</p>"
+    return "<p>O servidor da Mugiwara Store está no ar dereshishi!</p>"
 
 # Permite que o servidor rode
 if __name__ == '__main__':
