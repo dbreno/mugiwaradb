@@ -6,6 +6,7 @@ CREATE TABLE PRODUTO (
     quantidade_estoque INTEGER NOT NULL,
     categoria VARCHAR(50) NOT NULL,
     fabricado_em_mari BOOLEAN NOT NULL,
+    imagem VARCHAR(255),
     CONSTRAINT pk_produto PRIMARY KEY (id_produto),
     CONSTRAINT ck_produto_preco CHECK (preco > 0),
     CONSTRAINT ck_produto_estoque CHECK (quantidade_estoque >= 0)
