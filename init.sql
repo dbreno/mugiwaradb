@@ -13,7 +13,6 @@ CREATE TABLE PRODUTO (
     categoria VARCHAR(50) NOT NULL, -- Categoria do produto.
     fabricado_em_mari BOOLEAN NOT NULL, -- Atributo booleano específico.
     imagem VARCHAR(255), -- Caminho ou URL para a imagem do produto.
-    
     -- Definição das restrições (constraints) da tabela.
     CONSTRAINT pk_produto PRIMARY KEY (id_produto), -- Define id_produto como chave primária.
     CONSTRAINT ck_produto_preco CHECK (preco > 0), -- Garante que o preço seja sempre positivo.
