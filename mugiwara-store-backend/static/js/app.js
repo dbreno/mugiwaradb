@@ -529,7 +529,27 @@ createApp({
                 console.error('Erro:', error);
                 alert(error.message);
             }
-        }
+        },
+
+        async fetchEstoqueBaixo() {
+            this.loading = true;
+            this.error = null;
+            try {
+                const response = await fetch('/api/produtos/estoque-baixo', {
+                    headers: this.getAuthHeaders() // Usa o token para autenticação
+                });
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.message || 'Falha ao buscar produtos com estoque baixo.');
+                }
+                this.produtos = await response.json(); // Atualiza a lista de produtos na tela
+            } catch (error) {
+                console.error('Erro:', error);
+                this.error = error.message;
+            } finally {
+                this.loading = false;
+            }
+        },
 
     }
 }).mount('#app')

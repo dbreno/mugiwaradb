@@ -184,6 +184,25 @@ class ProdutoDAO(BaseDAO):
                 cursor.close()
                 conn.close()
         return relatorio
+    
+    def listar_estoque_baixo(self):
+        produtos = []
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            sql_query = "SELECT id_produto, nome, descricao, preco, quantidade_estoque, categoria, fabricado_em_mari, imagem FROM PRODUTO WHERE quantidade_estoque < 5 ORDER BY quantidade_estoque;"
+            cursor.execute(sql_query)
+            resultados = cursor.fetchall()
+            for resultado in resultados:
+                produtos.append({'id_produto': resultado[0], 'nome': resultado[1], 'descricao': resultado[2],'preco': float(resultado[3]), 'quantidade_estoque': resultado[4],'categoria': resultado[5], 'fabricado_em_mari': resultado[6], 'imagem': resultado[7]})
+        except Exception as e:
+            print(f"Erro ao listar produtos com estoque baixo: {e}")
+        finally:
+            if conn:
+                cursor.close()
+                conn.close()
+        return produtos
 
 class ClienteDAO(BaseDAO):
     def registrar(self, cliente_data):
@@ -237,11 +256,20 @@ class ClienteDAO(BaseDAO):
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
-            sql = "SELECT id_cliente, nome, email, senha_hash FROM CLIENTE WHERE email = %s"
+            # Query correta na tabela CLIENTE, buscando as flags de desconto
+            sql = "SELECT id_cliente, nome, email, senha_hash, torce_flamengo, assiste_one_piece, natural_de_sousa FROM CLIENTE WHERE email = %s"
             cursor.execute(sql, (email,))
             cliente = cursor.fetchone()
             if cliente:
-                return {'id': cliente[0], 'nome': cliente[1], 'email': cliente[2], 'senha_hash': cliente[3], 'tipo': 'cliente'}
+                # Retorno correto para o tipo 'cliente' com as flags
+                return {
+                    'id': cliente[0],
+                    'nome': cliente[1],
+                    'email': cliente[2],
+                    'senha_hash': cliente[3],
+                    'tipo': 'cliente',
+                    'flags_desconto': (cliente[4], cliente[5], cliente[6])
+                }
             return None
         except Exception as e:
             print(f"Erro ao buscar cliente por email: {e}")
@@ -291,28 +319,30 @@ class FuncionarioDAO(BaseDAO):
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
-            # Modifique o SQL para buscar as flags de desconto
-            sql = "SELECT id_cliente, nome, email, senha_hash, torce_flamengo, assiste_one_piece, natural_de_sousa FROM CLIENTE WHERE email = %s"
+            # Query correta na tabela FUNCIONARIO
+            sql = "SELECT id_funcionario, nome, email, senha_hash, cargo FROM FUNCIONARIO WHERE email = %s"
             cursor.execute(sql, (email,))
-            cliente = cursor.fetchone()
-            if cliente:
-                # Retorne um dicionário mais completo
+            func = cursor.fetchone()
+            if func:
+                # Retorno correto para o tipo 'funcionario'
                 return {
-                    'id': cliente[0],
-                    'nome': cliente[1],
-                    'email': cliente[2],
-                    'senha_hash': cliente[3],
-                    'tipo': 'cliente',
-                    'flags_desconto': (cliente[4], cliente[5], cliente[6]) # (torce_flamengo, assiste_one_piece, ...)
+                    'id': func[0],
+                    'nome': func[1],
+                    'email': func[2],
+                    'senha_hash': func[3],
+                    'cargo': func[4],
+                    'tipo': 'funcionario'
                 }
             return None
         except Exception as e:
-            print(f"Erro ao buscar cliente por email: {e}")
+            print(f"Erro ao buscar funcionário por email: {e}")
             return None
         finally:
             if conn:
                 cursor.close()
                 conn.close()
+
+
 class PedidoDAO(BaseDAO):
     def criar_pedido(self, id_cliente, id_funcionario, carrinho):
         conn = None
@@ -580,6 +610,16 @@ def get_historico_pedidos(current_user):
     dao = PedidoDAO()
     historico = dao.listar_por_cliente(current_user['id'])
     return jsonify(historico)
+
+@app.route('/api/produtos/estoque-baixo', methods=['GET'])
+@token_required
+def get_estoque_baixo(current_user):
+    if current_user['tipo'] != 'funcionario':
+        return jsonify({'message': 'Acesso negado: funcionalidade restrita a funcionários.'}), 403
+    
+    dao = ProdutoDAO()
+    produtos = dao.listar_estoque_baixo()
+    return jsonify(produtos)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
