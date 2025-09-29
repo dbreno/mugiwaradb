@@ -73,7 +73,9 @@ createApp({
             showProfileModal: false,
             userProfile: null,
             showHistoryModal: false,
-            orderHistory: []
+            orderHistory: [],
+            showSalesReportModal: false,
+            salesReportData: null
         }
     },
     // 'mounted' é um hook do ciclo de vida do Vue. Ele é executado
@@ -550,6 +552,34 @@ createApp({
                 this.loading = false;
             }
         },
+
+        openSalesReportModal() {
+            this.fetchSalesReport(); // Busca os dados do relatório ao abrir o modal
+            this.showSalesReportModal = true;
+        },
+        closeSalesReportModal() {
+            this.showSalesReportModal = false;
+            this.salesReportData = null; // Limpa os dados ao fechar
+        },
+        async fetchSalesReport() {
+            this.loading = true; // Reutilizamos o loading para dar feedback
+            this.error = null;
+            try {
+                const response = await fetch('/api/relatorios/vendas-mensal', {
+                    headers: this.getAuthHeaders()
+                });
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.message || 'Falha ao buscar o relatório de vendas.');
+                }
+                this.salesReportData = await response.json();
+            } catch (error) {
+                console.error('Erro ao buscar relatório de vendas:', error);
+                this.error = error.message; // Exibe o erro na tela
+            } finally {
+                this.loading = false;
+            }
+        }
 
     }
 }).mount('#app')

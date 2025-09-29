@@ -428,6 +428,43 @@ class PedidoDAO(BaseDAO):
                 cursor.close()
                 conn.close()
 
+class RelatorioDAO(BaseDAO):
+    def gerar_relatorio_vendas_mensal(self):
+        relatorio = []
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            # Esta query usa a nossa VIEW e agrupa os resultados por vendedor,
+            # somando o total de vendas (subtotal) e contando o número de vendas.
+            # Ela filtra os resultados para o mês e ano atuais.
+            sql = """
+                SELECT 
+                    nome_vendedor, 
+                    COUNT(DISTINCT id_pedido) as total_pedidos, 
+                    SUM(subtotal) as valor_total_vendido
+                FROM V_VENDAS_DETALHADAS
+                WHERE EXTRACT(MONTH FROM data_pedido) = EXTRACT(MONTH FROM CURRENT_DATE)
+                  AND EXTRACT(YEAR FROM data_pedido) = EXTRACT(YEAR FROM CURRENT_DATE)
+                GROUP BY nome_vendedor
+                ORDER BY valor_total_vendido DESC;
+            """
+            cursor.execute(sql)
+            resultados = cursor.fetchall()
+            for r in resultados:
+                relatorio.append({
+                    'vendedor': r[0],
+                    'pedidos_realizados': r[1],
+                    'total_vendido': float(r[2])
+                })
+            return relatorio
+        except Exception as e:
+            print(f"Erro ao gerar relatório de vendas mensal: {e}")
+            return None
+        finally:
+            if conn:
+                cursor.close()
+                conn.close()
 
 # --- ROTAS DA APLICAÇÃO ---
 @app.route("/")
@@ -620,6 +657,20 @@ def get_estoque_baixo(current_user):
     dao = ProdutoDAO()
     produtos = dao.listar_estoque_baixo()
     return jsonify(produtos)
+
+@app.route('/api/relatorios/vendas-mensal', methods=['GET'])
+@token_required
+def get_relatorio_vendas(current_user):
+    if current_user['tipo'] != 'funcionario':
+        return jsonify({'message': 'Acesso negado: funcionalidade restrita a funcionários.'}), 403
+    
+    dao = RelatorioDAO()
+    relatorio = dao.gerar_relatorio_vendas_mensal()
+
+    if relatorio is not None:
+        return jsonify(relatorio)
+    else:
+        return jsonify({'message': 'Erro ao gerar o relatório.'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

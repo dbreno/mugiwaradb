@@ -100,3 +100,19 @@ INSERT INTO PRODUTO (nome, descricao, preco, quantidade_estoque, categoria, fabr
 -- Inserindo um funcionário de exemplo (lembre-se que a senha deve ser um hash na aplicação real)
 INSERT INTO FUNCIONARIO (nome, email, senha_hash, cargo) VALUES
 ('Shanks, o Ruivo', 'shanks@yonkou.com', 'pbkdf2:sha256:1000000$BXeZMsLEqLZLDyby$d61607783caa4f2d2de8778bcbd8c0a45dd75efedfed52fe82146ea4021f48bd', 'Capitão');
+
+-- VIEW para simplificar a consulta de vendas por vendedor
+CREATE OR REPLACE VIEW V_VENDAS_DETALHADAS AS
+SELECT
+    f.id_funcionario,
+    f.nome AS nome_vendedor,
+    p.id_pedido,
+    p.data_pedido,
+    prod.nome AS nome_produto,
+    ip.quantidade,
+    ip.preco_unitario_na_venda,
+    (ip.quantidade * ip.preco_unitario_na_venda) AS subtotal
+FROM PEDIDO p
+JOIN FUNCIONARIO f ON p.id_funcionario = f.id_funcionario
+JOIN ITEM_PEDIDO ip ON p.id_pedido = ip.id_pedido
+JOIN PRODUTO prod ON ip.id_produto = prod.id_produto;

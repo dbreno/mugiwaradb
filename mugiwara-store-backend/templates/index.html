@@ -45,10 +45,14 @@
         <main class="container mx-auto px-6 py-8 flex-grow">
             <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <h1 class="font-pirata text-4xl md:text-5xl text-center text-gold-outline">Nossos Tesouros da Grand Line!</h1>
-                <div v-if="isFuncionario" class="flex gap-4">
+                <div v-if="isFuncionario" class="flex flex-wrap justify-center gap-4">
                     <button @click="openAddModal" class="btn-primary font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
                         Adicionar Tesouro
+                    </button>
+                    <button @click="openSalesReportModal" class="btn-secondary font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" /><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" /></svg>
+                        Relatório de Vendas
                     </button>
                     <button @click="fetchReport" class="btn-secondary font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1H3a1 1 0 01-1-1V4zm6 0a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1H9a1 1 0 01-1-1V4zm6 0a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" /></svg>
@@ -312,6 +316,39 @@
             </div>
         </div>
 
+        <div v-if="showSalesReportModal" class="modal-overlay" @click.self="closeSalesReportModal">
+            <div class="modal-content animate-fadeIn overflow-y-auto max-h-[90vh]">
+                <h3 class="font-pirata text-2xl text-gold-outline mb-4">Relatório de Vendas do Mês</h3>
+                <p class="mb-4 text-sm text-gray-600">Exibindo o desempenho dos vendedores para o mês de {{ new Date().toLocaleString('pt-BR', { month: 'long' }) }} de {{ new Date().getFullYear() }}.</p>
+                
+                <div v-if="salesReportData === null" class="text-center">Carregando relatório...</div>
+                <div v-else-if="salesReportData.length === 0" class="text-center py-4">
+                    <p>Nenhuma venda foi registrada este mês. A tripulação precisa trabalhar mais!</p>
+                </div>
+                <div v-else class="w-full">
+                    <table class="min-w-full bg-white/50 rounded-lg">
+                        <thead class="bg-[#c8a064]/50">
+                            <tr>
+                                <th class="py-2 px-4 text-left font-bold">Vendedor</th>
+                                <th class="py-2 px-4 text-center font-bold">Pedidos</th>
+                                <th class="py-2 px-4 text-right font-bold">Total Vendido</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="venda in salesReportData" :key="venda.vendedor" class="border-b border-[#d4bda5]">
+                                <td class="py-2 px-4">{{ venda.vendedor }}</td>
+                                <td class="py-2 px-4 text-center">{{ venda.pedidos_realizados }}</td>
+                                <td class="py-2 px-4 text-right font-semibold">B$ {{ venda.total_vendido.toFixed(2) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button type="button" @click="closeSalesReportModal" class="btn-secondary font-bold py-2 px-6 rounded-lg">Fechar</button>
+                </div>
+            </div>
+        </div>
 
         <footer class="header-bg py-4 mt-8">
             <div class="container mx-auto text-center text-yellow-200 text-sm">
