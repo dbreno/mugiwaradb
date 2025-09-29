@@ -69,7 +69,11 @@ createApp({
             // --- NOVOS DADOS PARA O CARRINHO ---
             cart: [],              // Array para armazenar os itens do carrinho.
             showCartModal: false,  // Controla a visibilidade do modal do carrinho.
-            formaPagamento: 'Cartão de Crédito' // Forma de pagamento padrão
+            formaPagamento: 'Cartão de Crédito', // Forma de pagamento padrão
+            showProfileModal: false,
+            userProfile: null,
+            showHistoryModal: false,
+            orderHistory: []
         }
     },
     // 'mounted' é um hook do ciclo de vida do Vue. Ele é executado
@@ -484,6 +488,46 @@ createApp({
             } catch (error) {
                 console.error("Erro no checkout:", error);
                 alert(`Erro: ${error.message}`);
+            }
+        },
+
+        openProfileModal() {
+            this.fetchUserProfile(); // Busca os dados ao abrir
+            this.showProfileModal = true;
+        },
+        closeProfileModal() {
+            this.showProfileModal = false;
+        },
+        async fetchUserProfile() {
+            try {
+                const response = await fetch('/api/cliente/perfil', {
+                    headers: this.getAuthHeaders()
+                });
+                if (!response.ok) throw new Error('Falha ao buscar dados do perfil.');
+                this.userProfile = await response.json();
+            } catch (error) {
+                console.error('Erro:', error);
+                alert(error.message);
+            }
+        },
+
+        openHistoryModal() {
+            this.fetchOrderHistory(); // Busca os dados ao abrir
+            this.showHistoryModal = true;
+        },
+        closeHistoryModal() {
+            this.showHistoryModal = false;
+        },
+        async fetchOrderHistory() {
+            try {
+                const response = await fetch('/api/pedidos/historico', {
+                    headers: this.getAuthHeaders()
+                });
+                if (!response.ok) throw new Error('Falha ao buscar histórico de pedidos.');
+                this.orderHistory = await response.json();
+            } catch (error) {
+                console.error('Erro:', error);
+                alert(error.message);
             }
         }
 

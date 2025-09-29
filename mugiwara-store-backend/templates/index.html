@@ -28,6 +28,10 @@
                     </div>
                     <div v-if="isLoggedIn" class="flex items-center gap-4">
                         <span class="text-white font-bold hidden sm:inline">Olá, Marujo!</span>
+                        
+                        <button v-if="currentUser.tipo === 'cliente'" @click="openProfileModal" class="btn-secondary font-bold py-2 px-4 rounded-lg text-sm">Meu Perfil</button>
+                        <button v-if="currentUser.tipo === 'cliente'" @click="openHistoryModal" class="btn-secondary font-bold py-2 px-4 rounded-lg text-sm">Meus Pedidos</button>
+                        
                         <button v-if="currentUser.tipo === 'cliente'" @click="openCartModal" class="btn-primary font-bold py-2 px-4 rounded-lg relative">
                             <span>Carrinho</span>
                             <span v-if="cartItemCount > 0" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{{ cartItemCount }}</span>
@@ -261,6 +265,46 @@
                     </div>
                 </div>
         </div>
+
+
+        <div v-if="showProfileModal" class="modal-overlay" @click.self="closeProfileModal">
+            <div class="modal-content animate-fadeIn">
+                <h3 class="font-pirata text-2xl text-gold-outline mb-4">Meu Perfil de Marujo</h3>
+                <div v-if="!userProfile" class="text-center">Carregando informações...</div>
+                <div v-else class="text-left space-y-2">
+                    <p><strong>Nome:</strong> {{ userProfile.nome }}</p>
+                    <p><strong>Email:</strong> {{ userProfile.email }}</p>
+                    <p><strong>Telefone:</strong> {{ userProfile.telefone || 'Não informado' }}</p>
+                    <h4 class="font-bold text-gold-outline mt-4 pt-2 border-t border-[#d4bda5]">Endereço de Entrega:</h4>
+                    <p>{{ userProfile.endereco.logradouro }}, {{ userProfile.endereco.numero }}</p>
+                    <p>{{ userProfile.endereco.bairro }}, {{ userProfile.endereco.cidade }} - {{ userProfile.endereco.estado }}</p>
+                    <p><strong>CEP:</strong> {{ userProfile.endereco.cep }}</p>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button type="button" @click="closeProfileModal" class="btn-secondary font-bold py-2 px-6 rounded-lg">Fechar</button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showHistoryModal" class="modal-overlay" @click.self="closeHistoryModal">
+            <div class="modal-content animate-fadeIn overflow-y-auto max-h-[90vh]">
+                <h3 class="font-pirata text-2xl text-gold-outline mb-4">Meu Histórico de Compras</h3>
+                <div v-if="orderHistory.length === 0" class="text-center py-4">
+                    <p>Você ainda não zarpou em nenhuma aventura de compra!</p>
+                </div>
+                <div v-else class="space-y-4">
+                    <div v-for="pedido in orderHistory" :key="pedido.id_pedido" class="p-3 border-b border-[#d4bda5]">
+                        <p class="font-bold">Pedido #{{ pedido.id_pedido }} <span class="text-sm font-normal">- {{ pedido.data }}</span></p>
+                        <p>Total: <span class="font-semibold">B$ {{ pedido.total.toFixed(2) }}</span> ({{ pedido.pagamento }})</p>
+                        <p>Status: <span class="font-semibold">{{ pedido.status }}</span></p>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button type="button" @click="closeHistoryModal" class="btn-secondary font-bold py-2 px-6 rounded-lg">Fechar</button>
+                </div>
+            </div>
+        </div>
+
 
         <footer class="header-bg py-4 mt-8">
             <div class="container mx-auto text-center text-yellow-200 text-sm">

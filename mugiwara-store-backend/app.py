@@ -250,6 +250,40 @@ class ClienteDAO(BaseDAO):
             if conn:
                 cursor.close()
                 conn.close()
+    
+    def buscar_por_id(self, id_cliente):
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            sql = """
+                SELECT c.nome, c.email, t.telefone, ec.cep, ec.logradouro,
+                        c.numero_endereco, c.complemento_endereco, ec.bairro,
+                        ec.cidade, ec.estado
+                FROM CLIENTE c
+                LEFT JOIN CLIENTE_TELEFONE t ON c.id_cliente = t.id_cliente
+                LEFT JOIN ENDERECO_CEP ec ON c.cep = ec.cep
+                WHERE c.id_cliente = %s LIMIT 1
+            """
+            cursor.execute(sql, (id_cliente,))
+            cliente = cursor.fetchone()
+            if cliente:
+                return {
+                    'nome': cliente[0], 'email': cliente[1], 'telefone': cliente[2],
+                    'endereco': {
+                        'cep': cliente[3], 'logradouro': cliente[4],
+                        'numero': cliente[5], 'complemento': cliente[6],
+                        'bairro': cliente[7], 'cidade': cliente[8], 'estado': cliente[9]
+                    }
+                }
+            return None
+        except Exception as e:
+            print(f"Erro ao buscar cliente por ID: {e}")
+            return None
+        finally:
+            if conn:
+                cursor.close()
+                conn.close()
 
 class FuncionarioDAO(BaseDAO):
     def buscar_por_email(self, email):
@@ -332,6 +366,38 @@ class PedidoDAO(BaseDAO):
                 conn.autocommit = True
                 cursor.close()
                 conn.close()
+    
+    def listar_por_cliente(self, id_cliente):
+        pedidos = []
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            sql = """
+                SELECT id_pedido, data_pedido, valor_total, forma_pagamento, status_pagamento
+                FROM PEDIDO
+                WHERE id_cliente = %s
+                ORDER BY data_pedido DESC
+            """
+            cursor.execute(sql, (id_cliente,))
+            resultados = cursor.fetchall()
+            for r in resultados:
+                pedidos.append({
+                    'id_pedido': r[0],
+                    'data': r[1].strftime('%d/%m/%Y %H:%M'),
+                    'total': float(r[2]),
+                    'pagamento': r[3],
+                    'status': r[4]
+                })
+            return pedidos
+        except Exception as e:
+            print(f"Erro ao listar pedidos do cliente: {e}")
+            return []
+        finally:
+            if conn:
+                cursor.close()
+                conn.close()
+
 
 # --- ROTAS DA APLICAÇÃO ---
 @app.route("/")
@@ -492,6 +558,28 @@ def upload_file(current_user):
 @app.route('/static/uploads/produtos/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/api/cliente/perfil', methods=['GET'])
+@token_required
+def get_cliente_perfil(current_user):
+    if current_user['tipo'] != 'cliente':
+        return jsonify({'message': 'Acesso negado'}), 403
+
+    dao = ClienteDAO()
+    perfil = dao.buscar_por_id(current_user['id'])
+    if perfil:
+        return jsonify(perfil)
+    return jsonify({'message': 'Perfil não encontrado'}), 404
+
+@app.route('/api/pedidos/historico', methods=['GET'])
+@token_required
+def get_historico_pedidos(current_user):
+    if current_user['tipo'] != 'cliente':
+        return jsonify({'message': 'Acesso negado'}), 403
+
+    dao = PedidoDAO()
+    historico = dao.listar_por_cliente(current_user['id'])
+    return jsonify(historico)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
