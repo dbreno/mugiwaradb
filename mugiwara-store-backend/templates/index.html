@@ -161,7 +161,7 @@
                 <h3 class="font-pirata text-2xl text-gold-outline mb-4">Entrar na Tripulação</h3>
                 <form @submit.prevent="login">
                     <input v-model="loginForm.email" type="email" placeholder="Email do Nakama" class="form-input mb-4" required>
-                    <input v-model="loginForm.password" type="password" placeholder="Palavra-Passe Secreta" class="form-input mb-6" required>
+                    <input v-model="loginForm.senha" type="password" placeholder="Palavra-Passe Secreta" class="form-input mb-6" required>
                     <div class="flex justify-end gap-4">
                         <button type="button" @click="closeLoginModal" class="btn-secondary font-bold py-2 px-6 rounded-lg">Cancelar</button>
                         <button type="submit" class="btn-primary font-bold py-2 px-6 rounded-lg">Navegar!</button>
@@ -177,7 +177,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input v-model="registerForm.nome" type="text" placeholder="Seu Nome de Pirata" class="form-input" required>
                         <input v-model="registerForm.email" type="email" placeholder="Seu Email" class="form-input" required>
-                        <input v-model="registerForm.password" type="password" placeholder="Crie uma Senha" class="form-input" required>
+                        <input v-model="registerForm.senha" type="password" placeholder="Crie uma Senha" class="form-input" required>
                         <input v-model="registerForm.telefone" type="text" placeholder="Telefone para Contato" class="form-input">
                     </div>
 
