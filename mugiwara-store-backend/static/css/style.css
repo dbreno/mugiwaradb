@@ -41,14 +41,8 @@ body::before {
 
 /* --- ESTILOS DOS CARDS DE PRODUTO --- */
 .card-bg {
-    background-color: #fdfaf2;
-    border: 2px solid #d4bda5;
-}
-
-.card-bg {
     background-color: rgba(253, 250, 242, 0.9); /* Fundo de "papel" para os cards */
     border: 3px solid #c8a064; /* Borda dourada */
-    border-radius: 15px; /* Bordas arredondadas */
     box-shadow: 0 4px 8px rgba(0,0,0,0.2), inset 0 0 10px rgba(200,160,100,0.5); /* Sombra para dar profundidade */
     transition: transform 0.3s ease-in-out; /* Transição suave para o efeito de hover */
     height: 450px; /* Altura fixa para alinhar os cards na grade */
@@ -76,8 +70,6 @@ body::before {
     width: 100%;
     height: 200px; /* Altura fixa para imagens */
     object-fit: cover; /* Ajusta a imagem sem distorcer, cortando se necessário */
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
 }
 
 /* Conteúdo de texto dentro do card */

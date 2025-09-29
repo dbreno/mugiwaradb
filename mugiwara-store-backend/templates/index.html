@@ -184,7 +184,7 @@
                     <div class="mt-4 border-t border-[#d4bda5] pt-4">
                         <h4 class="font-bold text-gold-outline mb-2">Seu Porto Seguro (Endereço)</h4>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input v-model="registerForm.endereco.cep" @blur="buscarCep" type="text" placeholder="CEP" class="form-input">
+                            <input v-model="registerForm.endereco.cep" @blur="buscarCep" type="text" placeholder="CEP" class="form-input" required>
                             <input v-model="registerForm.endereco.logradouro" type="text" placeholder="Logradouro" class="form-input md:col-span-2">
                             <input v-model="registerForm.endereco.numero_endereco" type="text" placeholder="Número" class="form-input">
                             <input v-model="registerForm.endereco.complemento_endereco" type="text" placeholder="Complemento" class="form-input">
