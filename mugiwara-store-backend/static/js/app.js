@@ -149,12 +149,16 @@ createApp({
                 this.token = token;
                 try {
                     const payload = JSON.parse(atob(token.split('.')[1]));
-                    // Verifica se o token expirou
                     if (payload.exp * 1000 > Date.now()) {
-                        this.currentUser = { id: payload.id, tipo: payload.tipo };
+                        // --- LINHA ALTERADA ---
+                        // Armazena os dados do usuário, incluindo a flag de desconto
+                        this.currentUser = { 
+                            id: payload.id, 
+                            tipo: payload.tipo, 
+                            temDesconto: payload.tem_desconto || false // Garante que o valor seja booleano
+                        };
                         this.isLoggedIn = true;
                     } else {
-                        // Se expirou, limpa
                         this.logout();
                     }
                 } catch (e) {

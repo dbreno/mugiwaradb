@@ -2,6 +2,7 @@
 # Importa bibliotecas necessárias para o funcionamento da aplicação
 import os  # Para manipulação de arquivos e variáveis de ambiente
 import psycopg2  # Para conexão com o banco de dados PostgreSQL
+from decimal import Decimal  # Para manipulação precisa de valores monetários
 from flask import Flask, jsonify, request, render_template, send_from_directory  # Framework Flask para criar a API
 from flask_cors import CORS  # Para permitir requisições de diferentes origens (CORS)
 from werkzeug.utils import secure_filename  # Para manipulação segura de nomes de arquivos
@@ -256,20 +257,28 @@ class FuncionarioDAO(BaseDAO):
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
-            sql = "SELECT id_funcionario, nome, email, senha_hash, cargo FROM FUNCIONARIO WHERE email = %s"
+            # Modifique o SQL para buscar as flags de desconto
+            sql = "SELECT id_cliente, nome, email, senha_hash, torce_flamengo, assiste_one_piece, natural_de_sousa FROM CLIENTE WHERE email = %s"
             cursor.execute(sql, (email,))
-            func = cursor.fetchone()
-            if func:
-                return {'id': func[0], 'nome': func[1], 'email': func[2], 'senha_hash': func[3], 'cargo': func[4], 'tipo': 'funcionario'}
+            cliente = cursor.fetchone()
+            if cliente:
+                # Retorne um dicionário mais completo
+                return {
+                    'id': cliente[0],
+                    'nome': cliente[1],
+                    'email': cliente[2],
+                    'senha_hash': cliente[3],
+                    'tipo': 'cliente',
+                    'flags_desconto': (cliente[4], cliente[5], cliente[6]) # (torce_flamengo, assiste_one_piece, ...)
+                }
             return None
         except Exception as e:
-            print(f"Erro ao buscar funcionário por email: {e}")
+            print(f"Erro ao buscar cliente por email: {e}")
             return None
         finally:
             if conn:
                 cursor.close()
                 conn.close()
-
 class PedidoDAO(BaseDAO):
     def criar_pedido(self, id_cliente, id_funcionario, carrinho):
         conn = None
@@ -278,7 +287,15 @@ class PedidoDAO(BaseDAO):
             cursor = conn.cursor()
             conn.autocommit = False
 
-            valor_total_calculado = 0
+            # 1. Verifica se o cliente tem direito a desconto
+            sql_verifica_desconto = "SELECT torce_flamengo, assiste_one_piece, natural_de_sousa FROM CLIENTE WHERE id_cliente = %s"
+            cursor.execute(sql_verifica_desconto, (id_cliente,))
+            flags_desconto = cursor.fetchone()
+            # A função any() retorna True se qualquer um dos itens na tupla for True
+            tem_desconto = any(flags_desconto) if flags_desconto else False
+
+
+            valor_total_calculado = Decimal('0.00')
             for item in carrinho['itens']:
                 sql_verifica_estoque = "SELECT nome, preco, quantidade_estoque FROM PRODUTO WHERE id_produto = %s FOR UPDATE"
                 cursor.execute(sql_verifica_estoque, (item['id_produto'],))
@@ -286,6 +303,11 @@ class PedidoDAO(BaseDAO):
                 if produto is None: raise Exception(f"Produto com ID {item['id_produto']} não encontrado.")
                 if produto[2] < item['quantidade']: raise Exception(f"Estoque insuficiente para o produto '{produto[0]}'.")
                 valor_total_calculado += produto[1] * item['quantidade']
+
+            # 2. Aplica o desconto de 10% se o cliente for elegível
+            if tem_desconto:
+                valor_total_calculado *= Decimal('0.90') # Aplica 10% de desconto
+
 
             sql_cria_pedido = "INSERT INTO PEDIDO (id_cliente, id_funcionario, forma_pagamento, status_pagamento, valor_total) VALUES (%s, %s, %s, %s, %s) RETURNING id_pedido"
             cursor.execute(sql_cria_pedido, (id_cliente, id_funcionario, carrinho['forma_pagamento'], 'Pagamento Aprovado', valor_total_calculado))
@@ -335,16 +357,39 @@ def login():
     auth = request.get_json()
     if not auth or not auth.get('email') or not auth.get('senha'):
         return jsonify({'message': 'Não foi possível verificar'}), 401
+    
+    # Tenta logar como funcionário primeiro
     user_dao = FuncionarioDAO()
     user = user_dao.buscar_por_email(auth['email'])
+    
+    # Se não for funcionário, tenta como cliente
     if not user:
         user_dao = ClienteDAO()
         user = user_dao.buscar_por_email(auth['email'])
+
     if not user:
         return jsonify({'message': 'Email não encontrado!'}), 401
+
     if check_password_hash(user['senha_hash'], auth['senha']):
-        token = jwt.encode({'id': user['id'], 'tipo': user['tipo'], 'exp': datetime.utcnow() + timedelta(hours=24)}, app.config['SECRET_KEY'], algorithm="HS256")
+        # --- INÍCIO DA ALTERAÇÃO ---
+        
+        # Cria o payload base do token
+        payload = {
+            'id': user['id'],
+            'tipo': user['tipo'],
+            'exp': datetime.utcnow() + timedelta(hours=24)
+        }
+
+        # Se o usuário for um cliente, verifica e adiciona a flag de desconto
+        if user['tipo'] == 'cliente':
+            tem_desconto = any(user['flags_desconto'])
+            payload['tem_desconto'] = tem_desconto
+
+        # --- FIM DA ALTERAÇÃO ---
+        
+        token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm="HS256")
         return jsonify({'token': token})
+        
     return jsonify({'message': 'Senha incorreta!'}), 401
 
 @app.route('/api/pedidos', methods=['POST'])
