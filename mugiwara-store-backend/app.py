@@ -193,14 +193,13 @@ class ClienteDAO(BaseDAO):
             conn.autocommit = False
 
             cep_data = cliente_data.get('endereco', {})
-            # --- CORREÇÃO AQUI: Garante que o CEP é None se for uma string vazia ---
             cep_valor = cep_data.get('cep') if cep_data and cep_data.get('cep') else None
 
             if cep_valor:
                 sql_cep = "INSERT INTO ENDERECO_CEP (cep, logradouro, bairro, cidade, estado) VALUES (%s, %s, %s, %s, %s) ON CONFLICT (cep) DO NOTHING;"
                 cursor.execute(sql_cep, (cep_valor, cep_data.get('logradouro', ''), cep_data.get('bairro', ''), cep_data.get('cidade', ''), cep_data.get('estado', '')))
 
-            senha_hash = generate_password_hash(cliente_data['senha']).decode('utf-8')
+            senha_hash = generate_password_hash(cliente_data['senha'])
             sql_cliente = "INSERT INTO CLIENTE (nome, email, senha_hash, numero_endereco, complemento_endereco, cep, torce_flamengo, assiste_one_piece, natural_de_sousa) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id_cliente"
             cursor.execute(sql_cliente, (
                 cliente_data['nome'], cliente_data['email'], senha_hash,
