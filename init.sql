@@ -116,3 +116,67 @@ FROM PEDIDO p
 JOIN FUNCIONARIO f ON p.id_funcionario = f.id_funcionario
 JOIN ITEM_PEDIDO ip ON p.id_pedido = ip.id_pedido
 JOIN PRODUTO prod ON ip.id_produto = prod.id_produto;
+
+-- Adicione ao final do arquivo init.sql
+
+-- Stored Procedure para criar um pedido completo de forma atômica
+CREATE OR REPLACE PROCEDURE criar_pedido_completo(
+    p_id_cliente INTEGER,
+    p_id_funcionario INTEGER,
+    p_forma_pagamento VARCHAR(50),
+    p_itens JSON,
+    INOUT p_novo_pedido_id INTEGER
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    item RECORD;
+    produto_info RECORD;
+    valor_total_calculado NUMERIC(10, 2) := 0;
+    tem_desconto BOOLEAN;
+BEGIN
+    -- 1. Verifica se o cliente tem direito a desconto
+    SELECT (torce_flamengo OR assiste_one_piece OR natural_de_sousa)
+    INTO tem_desconto
+    FROM CLIENTE WHERE id_cliente = p_id_cliente;
+
+    -- 2. Loop para verificar estoque e calcular o subtotal
+    FOR item IN SELECT * FROM json_to_recordset(p_itens) AS x(id_produto INTEGER, quantidade INTEGER)
+    LOOP
+        -- Trava a linha do produto para evitar condições de corrida
+        SELECT preco, quantidade_estoque, nome INTO produto_info FROM PRODUTO WHERE id_produto = item.id_produto FOR UPDATE;
+
+        IF produto_info IS NULL THEN
+            RAISE EXCEPTION 'Produto com ID % não encontrado.', item.id_produto;
+        END IF;
+
+        IF produto_info.quantidade_estoque < item.quantidade THEN
+            RAISE EXCEPTION 'Estoque insuficiente para o produto: %', produto_info.nome;
+        END IF;
+
+        valor_total_calculado := valor_total_calculado + (produto_info.preco * item.quantidade);
+    END LOOP;
+
+    -- 3. Aplica o desconto, se houver
+    IF tem_desconto THEN
+        valor_total_calculado := valor_total_calculado * 0.90;
+    END IF;
+
+    -- 4. Insere o pedido na tabela principal
+    INSERT INTO PEDIDO (id_cliente, id_funcionario, forma_pagamento, status_pagamento, valor_total)
+    VALUES (p_id_cliente, p_id_funcionario, p_forma_pagamento, 'Pagamento Aprovado', valor_total_calculado)
+    RETURNING id_pedido INTO p_novo_pedido_id;
+
+    -- 5. Loop para inserir os itens do pedido e atualizar o estoque
+    FOR item IN SELECT * FROM json_to_recordset(p_itens) AS x(id_produto INTEGER, quantidade INTEGER)
+    LOOP
+        -- Busca o preço no momento da venda para registrar no item_pedido
+        SELECT preco INTO produto_info FROM PRODUTO WHERE id_produto = item.id_produto;
+
+        INSERT INTO ITEM_PEDIDO (id_pedido, id_produto, quantidade, preco_unitario_na_venda)
+        VALUES (p_novo_pedido_id, item.id_produto, item.quantidade, produto_info.preco);
+
+        UPDATE PRODUTO SET quantidade_estoque = quantidade_estoque - item.quantidade WHERE id_produto = item.id_produto;
+    END LOOP;
+END;
+$$; 

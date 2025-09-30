@@ -2,6 +2,7 @@
 # Importa bibliotecas necessárias para o funcionamento da aplicação
 import os  # Para manipulação de arquivos e variáveis de ambiente
 import psycopg2  # Para conexão com o banco de dados PostgreSQL
+import json 
 from decimal import Decimal  # Para manipulação precisa de valores monetários
 from flask import Flask, jsonify, request, render_template, send_from_directory  # Framework Flask para criar a API
 from flask_cors import CORS  # Para permitir requisições de diferentes origens (CORS)
@@ -349,54 +350,50 @@ class PedidoDAO(BaseDAO):
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
-            conn.autocommit = False
+            
+            # Converte a lista de itens do carrinho para uma string no formato JSON,
+            # que é o que a nossa Stored Procedure espera.
+            itens_json = json.dumps(carrinho['itens'])
 
-            # 1. Verifica se o cliente tem direito a desconto
-            sql_verifica_desconto = "SELECT torce_flamengo, assiste_one_piece, natural_de_sousa FROM CLIENTE WHERE id_cliente = %s"
-            cursor.execute(sql_verifica_desconto, (id_cliente,))
-            flags_desconto = cursor.fetchone()
-            # A função any() retorna True se qualquer um dos itens na tupla for True
-            tem_desconto = any(flags_desconto) if flags_desconto else False
-
-
-            valor_total_calculado = Decimal('0.00')
-            for item in carrinho['itens']:
-                sql_verifica_estoque = "SELECT nome, preco, quantidade_estoque FROM PRODUTO WHERE id_produto = %s FOR UPDATE"
-                cursor.execute(sql_verifica_estoque, (item['id_produto'],))
-                produto = cursor.fetchone()
-                if produto is None: raise Exception(f"Produto com ID {item['id_produto']} não encontrado.")
-                if produto[2] < item['quantidade']: raise Exception(f"Estoque insuficiente para o produto '{produto[0]}'.")
-                valor_total_calculado += produto[1] * item['quantidade']
-
-            # 2. Aplica o desconto de 10% se o cliente for elegível
-            if tem_desconto:
-                valor_total_calculado *= Decimal('0.90') # Aplica 10% de desconto
-
-
-            sql_cria_pedido = "INSERT INTO PEDIDO (id_cliente, id_funcionario, forma_pagamento, status_pagamento, valor_total) VALUES (%s, %s, %s, %s, %s) RETURNING id_pedido"
-            cursor.execute(sql_cria_pedido, (id_cliente, id_funcionario, carrinho['forma_pagamento'], 'Pagamento Aprovado', valor_total_calculado))
+            # O último parâmetro (p_novo_pedido_id) é INOUT, então passamos um valor inicial (0).
+            # A procedure irá modificá-lo e nos retornar o ID do novo pedido.
+            # Infelizmente, o psycopg2 não lida bem com parâmetros INOUT em CALL.
+            # Uma abordagem mais robusta seria usar uma FUNCTION, mas para manter a exigência
+            # de uma PROCEDURE, vamos fazer uma pequena adaptação.
+            
+            # Vamos transformar a procedure em uma FUNCTION temporariamente para facilitar a chamada
+            # A lógica é a mesma, mas a forma de chamar do Python fica mais limpa.
+            
+            # (A melhor abordagem é modificar a Stored Procedure para ser uma FUNCTION no SQL)
+            # Por simplicidade aqui, vamos chamar a procedure e depois buscar o último ID.
+            # Esta não é a forma ideal em produção, mas cumpre o requisito.
+            
+            # Chamada à Stored Procedure. Passamos 0 como placeholder para o parâmetro INOUT.
+            sql_call = "CALL criar_pedido_completo(%s, %s, %s, %s, %s);"
+            # Para pegar o ID de volta, a forma mais segura é buscar o último pedido do cliente.
+            
+            cursor.execute("BEGIN;") # Inicia a transação
+            cursor.execute(sql_call, (id_cliente, id_funcionario, carrinho['forma_pagamento'], itens_json, 0))
+            
+            # Busca o ID do último pedido inserido por este cliente nesta sessão
+            cursor.execute("SELECT id_pedido FROM PEDIDO WHERE id_cliente = %s ORDER BY data_pedido DESC LIMIT 1;", (id_cliente,))
             novo_pedido_id = cursor.fetchone()[0]
-
-            for item in carrinho['itens']:
-                cursor.execute("SELECT preco FROM PRODUTO WHERE id_produto = %s", (item['id_produto'],))
-                preco_unitario = cursor.fetchone()[0]
-                sql_insere_item = "INSERT INTO ITEM_PEDIDO (id_pedido, id_produto, quantidade, preco_unitario_na_venda) VALUES (%s, %s, %s, %s)"
-                cursor.execute(sql_insere_item, (novo_pedido_id, item['id_produto'], item['quantidade'], preco_unitario))
-                sql_atualiza_estoque = "UPDATE PRODUTO SET quantidade_estoque = quantidade_estoque - %s WHERE id_produto = %s"
-                cursor.execute(sql_atualiza_estoque, (item['quantidade'], item['id_produto']))
-
-            conn.commit()
+            
+            conn.commit() # Confirma a transação
+            
             return {"status": "sucesso", "id_pedido": novo_pedido_id}
         except Exception as e:
-            if conn: conn.rollback()
-            print(f"Erro ao criar pedido: {e}")
-            return {"status": "erro", "mensagem": str(e)}
+            if conn: conn.rollback() # Desfaz a transação em caso de erro
+            
+            # Extrai a mensagem de erro vinda do banco (ex: "Estoque insuficiente...")
+            mensagem_erro = str(e).split('CONTEXT:')[0].strip()
+            print(f"Erro ao chamar procedure de pedido: {mensagem_erro}")
+            return {"status": "erro", "mensagem": mensagem_erro}
         finally:
             if conn:
-                conn.autocommit = True
                 cursor.close()
                 conn.close()
-    
+
     def listar_por_cliente(self, id_cliente):
         pedidos = []
         conn = None
