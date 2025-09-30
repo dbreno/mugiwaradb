@@ -238,43 +238,65 @@
         <div v-if="showCartModal" class="modal-overlay" @click.self="closeCartModal">
             <div class="modal-content animate-fadeIn overflow-y-auto max-h-[90vh]">
                 <h3 class="font-pirata text-2xl text-gold-outline mb-4">Seu Baú de Tesouros</h3>
-                
-                <div v-if="cart.length > 0" class="mt-6 border-t pt-4 border-[#d4bda5]">
-                    <div v-if="currentUser && currentUser.temDesconto" class="p-3 mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded-lg">
-                        <p class="font-bold">Nakama Especial a Bordo!</p>
-                        <p>Você tem direito a um desconto de 10% que será aplicado no valor total!</p>
-                    </div>
 
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center text-lg">
-                            <span>Subtotal:</span>
-                            <span>B$ {{ cartTotal.toFixed(2) }}</span>
-                        </div>
-                        <div v-if="currentUser && currentUser.temDesconto" class="flex justify-between items-center text-green-600">
-                            <span>Desconto (10%):</span>
-                            <span>- B$ {{ (cartTotal * 0.10).toFixed(2) }}</span>
-                        </div>
-                        <div class="flex justify-between items-center font-bold text-xl border-t pt-2 mt-2">
-                            <span>Total:</span>
-                            <span v-if="currentUser && currentUser.temDesconto">B$ {{ (cartTotal * 0.90).toFixed(2) }}</span>
-                            <span v-else>B$ {{ cartTotal.toFixed(2) }}</span>
+                <div v-if="cart.length === 0" class="text-center text-gray-600 py-8">
+                    <p>Seu carrinho está mais vazio que o bolso do Sanji após uma visita ao mercado!</p>
+                </div>
+
+                <div v-else>
+                    <div class="space-y-4">
+                        <div v-for="item in cart" :key="item.id_produto" class="flex items-center justify-between pb-4 border-b border-[#d4bda5]">
+                            <div class="flex items-center gap-4">
+                                <img :src="item.imagem || 'https://placehold.co/100'" class="w-16 h-16 object-cover rounded-lg border-2 border-[#c8a064]">
+                                <div>
+                                    <h4 class="font-bold">{{ item.nome }}</h4>
+                                    <p class="text-sm">B$ {{ item.preco.toFixed(2) }} x {{ item.quantidade }}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold">B$ {{ (item.preco * item.quantidade).toFixed(2) }}</p>
+                                <button @click="removeFromCart(item.id_produto)" class="text-red-600 hover:text-red-800 text-xs mt-1 font-semibold">Remover</button>
+                            </div>
                         </div>
                     </div>
+                    <div class="mt-6 border-t pt-4 border-[#d4bda5]">
+                        <div v-if="currentUser && currentUser.temDesconto" class="p-3 mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded-lg">
+                            <p class="font-bold">Nakama Especial a Bordo!</p>
+                            <p>Você tem direito a um desconto de 10% que será aplicado no valor total!</p>
+                        </div>
 
-                    <div class="mt-4">
-                        <label for="pagamento" class="block font-bold mb-2">Forma de Pagamento:</label>
-                        <select v-model="formaPagamento" id="pagamento" class="form-input">
-                            <option>Cartão de Crédito</option>
-                            <option>PIX</option>
-                            <option>Boleto</option>
-                        </select>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center text-lg">
+                                <span>Subtotal:</span>
+                                <span>B$ {{ cartTotal.toFixed(2) }}</span>
+                            </div>
+                            <div v-if="currentUser && currentUser.temDesconto" class="flex justify-between items-center text-green-600">
+                                <span>Desconto (10%):</span>
+                                <span>- B$ {{ (cartTotal * 0.10).toFixed(2) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center font-bold text-xl border-t pt-2 mt-2">
+                                <span>Total:</span>
+                                <span v-if="currentUser && currentUser.temDesconto">B$ {{ (cartTotal * 0.90).toFixed(2) }}</span>
+                                <span v-else>B$ {{ cartTotal.toFixed(2) }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <label for="pagamento" class="block font-bold mb-2">Forma de Pagamento:</label>
+                            <select v-model="formaPagamento" id="pagamento" class="form-input">
+                                <option>Cartão de Crédito</option>
+                                <option>PIX</option>
+                                <option>Boleto</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                    <div class="mt-6 flex justify-end gap-4">
-                        <button type="button" @click="closeCartModal" class="btn-secondary font-bold py-2 px-6 rounded-lg">Continuar Navegando</button>
-                        <button v-if="cart.length > 0" type="button" @click="checkout" class="btn-primary font-bold py-2 px-6 rounded-lg">Finalizar Compra</button>
-                    </div>
+
+                <div class="mt-6 flex justify-end gap-4">
+                    <button type="button" @click="closeCartModal" class="btn-secondary font-bold py-2 px-6 rounded-lg">Continuar Navegando</button>
+                    <button v-if="cart.length > 0" type="button" @click="checkout" class="btn-primary font-bold py-2 px-6 rounded-lg">Finalizar Compra</button>
                 </div>
+            </div>
         </div>
 
 
