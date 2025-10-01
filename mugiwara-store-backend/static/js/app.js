@@ -75,7 +75,16 @@ createApp({
             showHistoryModal: false,
             orderHistory: [],
             showSalesReportModal: false,
-            salesReportData: null
+            salesReportData: null,
+            showRegisterFuncionarioModal: false,
+            registerFuncionarioForm: {
+                nome: '',
+                email: '',
+                senha: '',
+                cargo: 'Vendedor'
+            },
+            vendedores: [],
+            selectedVendedorId: null
         }
     },
     // 'mounted' é um hook do ciclo de vida do Vue. Ele é executado
@@ -83,6 +92,7 @@ createApp({
     mounted() {
         this.checkForToken(); // Verifica se já existe um token ao carregar a página.
         this.fetchProdutos(); // Busca os produtos da API assim que a página carrega.
+        this.fetchVendedores(); // Busca a lista de vendedores para o dropdown do carrinho
     },
     // 'computed' são propriedades que calculam seu valor com base em outras propriedades.
     // Elas são reativas e se atualizam automaticamente.
@@ -579,7 +589,50 @@ createApp({
             } finally {
                 this.loading = false;
             }
-        }
+        },
+
+        openRegisterFuncionarioModal() {
+            this.showRegisterFuncionarioModal = true;
+        },
+        closeRegisterFuncionarioModal() {
+            this.showRegisterFuncionarioModal = false;
+            this.registerFuncionarioForm = { nome: '', email: '', senha: '', cargo: 'Vendedor' };
+        },
+
+        async fetchVendedores() {
+            try {
+                const response = await fetch('/api/funcionarios');
+                if (!response.ok) throw new Error('Falha ao buscar a lista de vendedores.');
+                this.vendedores = await response.json();
+                // Define um vendedor padrão se a lista não estiver vazia
+                if (this.vendedores.length > 0) {
+                    this.selectedVendedorId = this.vendedores[0].id;
+                }
+            } catch (error) {
+                console.error('Erro ao buscar vendedores:', error);
+            }
+        },
+
+        async registerFuncionario() {
+            try {
+                const response = await fetch('/api/funcionarios/registrar', {
+                    method: 'POST',
+                    headers: this.getAuthHeaders(), // Envia o token do funcionário logado
+                    body: JSON.stringify(this.registerFuncionarioForm)
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.message || 'Falha ao cadastrar funcionário.');
+                }
+                alert('Funcionário cadastrado com sucesso!');
+                this.closeRegisterFuncionarioModal();
+                // Atualiza a lista de vendedores para o dropdown do carrinho
+                await this.fetchVendedores();
+            } catch (error) {
+                console.error('Erro ao registrar funcionário:', error);
+                alert(`Erro: ${error.message}`);
+            }
+        },
 
     }
 }).mount('#app')

@@ -343,6 +343,57 @@ class FuncionarioDAO(BaseDAO):
                 cursor.close()
                 conn.close()
 
+    def listar_todos(self):
+        vendedores = []
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            # Busca o ID e o nome de todos os funcionários para a lista de seleção
+            sql = "SELECT id_funcionario, nome FROM FUNCIONARIO ORDER BY nome"
+            cursor.execute(sql)
+            resultados = cursor.fetchall()
+            for r in resultados:
+                vendedores.append({'id': r[0], 'nome': r[1]})
+            return vendedores
+        except Exception as e:
+            print(f"Erro ao listar funcionários: {e}")
+            return []
+        finally:
+            if conn:
+                cursor.close()
+                conn.close()
+
+    def registrar(self, func_data):
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            senha_hash = generate_password_hash(func_data['senha'])
+            
+            sql = "INSERT INTO FUNCIONARIO (nome, email, senha_hash, cargo) VALUES (%s, %s, %s, %s) RETURNING id_funcionario"
+            cursor.execute(sql, (
+                func_data['nome'],
+                func_data['email'],
+                senha_hash,
+                func_data.get('cargo', 'Vendedor')
+            ))
+            id_novo = cursor.fetchone()[0]
+            conn.commit()
+            return id_novo
+        except psycopg2.IntegrityError:
+            if conn: conn.rollback()
+            return "Email já cadastrado."
+        except Exception as e:
+            if conn: conn.rollback()
+            print(f"Erro ao registrar funcionário: {e}")
+            return None
+        finally:
+            if conn:
+                cursor.close()
+                conn.close()
+
 
 class PedidoDAO(BaseDAO):
     def criar_pedido(self, id_cliente, id_funcionario, carrinho):
@@ -668,6 +719,29 @@ def get_relatorio_vendas(current_user):
         return jsonify(relatorio)
     else:
         return jsonify({'message': 'Erro ao gerar o relatório.'}), 500
+    
+# Adicione esta rota ao final do arquivo app.py
+
+@app.route('/api/funcionarios/registrar', methods=['POST'])
+@token_required
+def registrar_funcionario_api(current_user):
+    # Camada de segurança: Apenas funcionários podem acessar
+    if current_user['tipo'] != 'funcionario':
+        return jsonify({'message': 'Acesso negado.'}), 403
+
+    dados = request.get_json()
+    if not dados or not dados.get('email') or not dados.get('senha') or not dados.get('nome'):
+        return jsonify({'message': 'Dados essenciais (nome, email, senha) são obrigatórios.'}), 400
+    
+    dao = FuncionarioDAO()
+    resultado = dao.registrar(dados)
+
+    if isinstance(resultado, int):
+        return jsonify({'message': 'Funcionário registrado com sucesso!', 'id_funcionario': resultado}), 201
+    elif isinstance(resultado, str):
+        return jsonify({'message': resultado}), 409
+    else:
+        return jsonify({'message': 'Erro no servidor ao registrar funcionário.'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
