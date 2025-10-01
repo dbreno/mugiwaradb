@@ -108,7 +108,7 @@
                     <img :src="produto.imagem || 'https://placehold.co/400x300?text=Tesouro'" :alt="produto.nome" class="w-full h-48 object-cover border-b-4 border-[#ffd700]">
                     <div class="p-4 flex flex-col flex-grow">
                         <h2 class="text-lg text-gold-outline font-pirata truncate" :title="produto.nome">{{ produto.nome }}</h2>
-                        <p class="text-gray-600 text-sm mt-1 flex-grow">{{ produto.descricao }}</p>
+                        <p class="text-gray-600 text-sm mt-1 flex-grow leading-5 max-h-[2.5rem] overflow-y-auto">{{ produto.descricao }}</p>
                         <div class="mt-4">
                             <span class="text-2xl font-bold text-gold-outline">B$ {{ produto.preco.toFixed(2) }}</span>
                             <p class="text-sm text-gray-500">Estoque: {{ produto.quantidade_estoque }}</p>
@@ -239,11 +239,11 @@
             <div class="modal-content animate-fadeIn overflow-y-auto max-h-[90vh]">
                 <h3 class="font-pirata text-2xl text-gold-outline mb-4">Seu Baú de Tesouros</h3>
 
-                <div v-if="cart.length === 0" class="text-center text-gray-600 py-8">
+                <div v-if="cart.length === 0" class="text-center text-gray-600 py-8 bg-white/80 p-4 rounded-lg">
                     <p>Seu carrinho está mais vazio que o bolso do Sanji após uma visita ao mercado!</p>
                 </div>
 
-                <div v-else>
+                <div v-else class="bg-white/80 p-4 rounded-lg">
                     <div class="space-y-4">
                         <div v-for="item in cart" :key="item.id_produto" class="flex items-center justify-between pb-4 border-b border-[#d4bda5]">
                             <div class="flex items-center gap-4">
@@ -304,7 +304,7 @@
             <div class="modal-content animate-fadeIn">
                 <h3 class="font-pirata text-2xl text-gold-outline mb-4">Meu Perfil de Marujo</h3>
                 <div v-if="!userProfile" class="text-center">Carregando informações...</div>
-                <div v-else class="text-left space-y-2">
+                <div v-else class="text-left space-y-2 bg-white/80 p-4 rounded-lg">
                     <p><strong>Nome:</strong> {{ userProfile.nome }}</p>
                     <p><strong>Email:</strong> {{ userProfile.email }}</p>
                     <p><strong>Telefone:</strong> {{ userProfile.telefone || 'Não informado' }}</p>
@@ -326,7 +326,7 @@
                     <p>Você ainda não zarpou em nenhuma aventura de compra!</p>
                 </div>
                 <div v-else class="space-y-4">
-                    <div v-for="pedido in orderHistory" :key="pedido.id_pedido" class="p-3 border-b border-[#d4bda5]">
+                    <div v-for="pedido in orderHistory" :key="pedido.id_pedido" class="p-3 border-b border-[#d4bda5] bg-white/80 rounded-lg">
                         <p class="font-bold">Pedido #{{ pedido.id_pedido }} <span class="text-sm font-normal">- {{ pedido.data }}</span></p>
                         <p>Total: <span class="font-semibold">B$ {{ pedido.total.toFixed(2) }}</span> ({{ pedido.pagamento }})</p>
                         <p>Status: <span class="font-semibold">{{ pedido.status }}</span></p>
@@ -341,13 +341,13 @@
         <div v-if="showSalesReportModal" class="modal-overlay" @click.self="closeSalesReportModal">
             <div class="modal-content animate-fadeIn overflow-y-auto max-h-[90vh]">
                 <h3 class="font-pirata text-2xl text-gold-outline mb-4">Relatório de Vendas do Mês</h3>
-                <p class="mb-4 text-sm text-gray-600">Exibindo o desempenho dos vendedores para o mês de {{ new Date().toLocaleString('pt-BR', { month: 'long' }) }} de {{ new Date().getFullYear() }}.</p>
+                <p class="mb-4 text-sm text-gray-600 bg-white/80 p-4 rounded-lg">Exibindo o desempenho dos vendedores para o mês de {{ new Date().toLocaleString('pt-BR', { month: 'long' }) }} de {{ new Date().getFullYear() }}.</p>
                 
                 <div v-if="salesReportData === null" class="text-center">Carregando relatório...</div>
-                <div v-else-if="salesReportData.length === 0" class="text-center py-4">
+                <div v-else-if="salesReportData.length === 0" class="text-center py-4 bg-white/80 p-4 rounded-lg">
                     <p>Nenhuma venda foi registrada este mês. A tripulação precisa trabalhar mais!</p>
                 </div>
-                <div v-else class="w-full">
+                <div v-else class="w-full bg-white/80 p-4 rounded-lg">
                     <table class="min-w-full bg-white/50 rounded-lg">
                         <thead class="bg-[#c8a064]/50">
                             <tr>
